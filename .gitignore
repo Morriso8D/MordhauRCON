@@ -1,0 +1,9 @@
+.env
+/node_modules
+/public/css/**/*.css
+/public/js/**/*.js
+/public/js/*.js
+/public/js/**/*.js.map
+/storage
+public/css/*.css
+public/js/*.js
