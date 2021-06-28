@@ -2,7 +2,8 @@ require('dotenv').config({path:__dirname+'/.env'})
 const Response = require('./resources/js/mordhau-response')
 const Rcon = require('./resources/js/mordhau-rcon');
 const Discord = require('./resources/js/discord');
-// require('./resources/js/models/rcon-chat');
+// require('./models/rcon-chat');
+const RconKillfeed = require('./models/rcon-killfeed');
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
@@ -29,6 +30,7 @@ const sendCommand = async function (client, command) {
 
 let conn = new Rcon(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
 const discord = new Discord();
+const rconKillfeed = new RconKillfeed();
 
 /**
  * Example extending
@@ -101,6 +103,11 @@ conn.on('auth', () => {
 
   if(response.hasInfo(str)){ // updates map info
 
+  }
+
+  if(response.hasKillfeed(str)){
+    // console.log(response.getKillfeed());
+    rconKillfeed.saveKill(response.getKillfeed());
   }
 
 }).on('end', () => {

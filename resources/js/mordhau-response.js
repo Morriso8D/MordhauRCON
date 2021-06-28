@@ -13,8 +13,14 @@ class MordhauResponse{
 
   }
 
+  discord = 'https://discord.gg/GBZJmrR';
 
   commandWhitelist = [
+      {
+        parseMatch: 'discord',
+        lastUse: new Date().getTime(),
+        exeMethod: 'buildDiscordCommand',
+      },
       {
         parseMatch: '/tp rock',
         exeMethod: 'buildTpRockCommand',
@@ -136,6 +142,7 @@ class MordhauResponse{
       playfab: null,
       name: null,
       message: null,
+      killfeed: null,
       commandIndex: null,
       matchState: null,
       gamemode: null,
@@ -175,184 +182,234 @@ class MordhauResponse{
     getGamemode(){
       return this.respData.gamemode;
     }
+
+    getKillfeed(){
+      return this.respData.killfeed;
+    }
     
     hasCommand(resp){
-      
-        const respChunk = this.iniParseChat(resp);
-        if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
+    
+      const respChunk = this.iniParseChat(resp);
+      if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
 
-              this.respData.playfab = respChunk[0];
-              this.respData.name = respChunk[1];
-              this.respData.message = respChunk[2];
+            this.respData.playfab = respChunk[0];
+            this.respData.name = respChunk[1];
+            this.respData.message = respChunk[2];
 
-            this.respData.commandIndex = this.parseForCommand(this.respData.message);
+          this.respData.commandIndex = this.parseForCommand(this.respData.message);
 
-            if(this.respData.commandIndex === -1) return false; // No command found
-
-            return true;
-        }
-      }
-
-      hasMessage(resp){
-        
-        const respChunk = this.iniParseChat(resp);
-
-        if(typeof respChunk !== 'undefined') return true;
-        return false;
-      }
-
-      hasBlacklistedWord(resp){
-
-        const respChunk = this.iniParseChat(resp);
-
-        if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
-          this.respData.playfab = respChunk[0];
-          this.respData.name = respChunk[1];
-          this.respData.message = respChunk[2];
-
-          if(this.parseForChatBlacklist(this.respData.message) === -1) return false;
+          if(this.respData.commandIndex === -1) return false; // No command found
 
           return true;
-        }
       }
+    }
 
-      hasMatchState(resp){
+    hasKillfeed(resp){
+      const data = this.iniParseKillfeed(resp);
 
-        const respChunk = this.iniParseMatchState(resp);
-
-        if(typeof respChunk == 'undefined') return false; // response isn't MatchState
-        
-        this.respData.matchState = respChunk;
-
-        return true; // response is MatchState
-      }
-
-      hasInfo(resp){
-
-        const respChunk = this.iniParseInfo(resp);
-
-        if(typeof respChunk == 'undefined') return false; // response isn't Info
-
-        this.respData.gamemode = respChunk.gamemode;
-        this.respData.map = respChunk.map;
-
-        return true; // response is Info
-      }
-
-      hasPunishment(resp){
-        const respChunk = this.iniParsePunishment(resp);
-
-        if(typeof respChunk === 'undefined') return false;
+      if (typeof data !== 'undefined'){
+        this.respData.killfeed = data;
         return true;
       }
+      return false;
+    }
 
-      iniParseInfo(resp){
-        const respList = resp.split('\n');
+    hasMessage(resp){
+      
+      const respChunk = this.iniParseChat(resp);
 
-        if(respList.length > 1 && respList[0].match(/^HostName:/)) {
-          return { 
-              gamemode: respList[3].split(': ')[1],
-              map: respList[4].split(': ')[1]
-            };
+      if(typeof respChunk !== 'undefined') return true;
+      return false;
+    }
+
+    hasBlacklistedWord(resp){
+
+      const respChunk = this.iniParseChat(resp);
+
+      if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
+        this.respData.playfab = respChunk[0];
+        this.respData.name = respChunk[1];
+        this.respData.message = respChunk[2];
+
+        if(this.parseForChatBlacklist(this.respData.message) === -1) return false;
+
+        return true;
+      }
+    }
+
+    hasMatchState(resp){
+
+      const respChunk = this.iniParseMatchState(resp);
+
+      if(typeof respChunk == 'undefined') return false; // response isn't MatchState
+      
+      this.respData.matchState = respChunk;
+
+      return true; // response is MatchState
+    }
+
+    hasInfo(resp){
+
+      const respChunk = this.iniParseInfo(resp);
+
+      if(typeof respChunk == 'undefined') return false; // response isn't Info
+
+      this.respData.gamemode = respChunk.gamemode;
+      this.respData.map = respChunk.map;
+
+      return true; // response is Info
+    }
+
+    hasPunishment(resp){
+      const respChunk = this.iniParsePunishment(resp);
+
+      if(typeof respChunk === 'undefined') return false;
+      return true;
+    }
+
+    iniParseInfo(resp){
+      const respList = resp.split('\n');
+
+      if(respList.length > 1 && respList[0].match(/^HostName:/)) {
+        return { 
+            gamemode: respList[3].split(': ')[1],
+            map: respList[4].split(': ')[1]
+          };
+      }
+    }
+
+    iniParseKillfeed(resp){
+      let respList = resp.split(/^Killfeed:\s/);
+
+      if(respList.length > 1) {
+        let data = {players: []};
+
+        respList[1] = respList[1].split(/.?:\s/);
+        let players = respList[1][1].split(' killed ');
+
+        for(let player in players){
+          let name = players[player].split(/[A-Z0-9]{14,16}\s/)[1];
+          let id = players[player].split(' ')[0];
+          data.players.push({playfab:id, name:name});
         }
+
+        const response = {
+          killer: data.players[0],
+          killed: data.players[1],
+          created_at: respList[1][0],
+        };
+
+        return response;
       }
 
-      iniParseMatchState(resp){
-        const respList = resp.split(/^MatchState:\s/);
+      return;
+    }
 
-        if(respList.length > 1) return respList[1];
+    iniParseMatchState(resp){
+      const respList = resp.split(/^MatchState:\s/);
+
+      if(respList.length > 1) return respList[1];
+    }
+    
+    iniParseChat(resp){
+        const respList = resp.split(/^Chat:\s/);
+        
+      if(respList.length > 1) return respList[1].split(',');
+    }
+
+    iniParsePunishment(resp){
+      const respList = resp.split(/^Punishment:\s/);
+
+      if(respList.length > 1) return respList[1].split(',');
+    }
+    
+    matchPlayfab(string){
+      if(string.match(/^[A-Z0-9]{14,16}$/)) return true;
+
+      console.log("Failed to match playfab");
+      return false;
+    }
+
+    parseForCommand(message){
+      return this.commandWhitelist.findIndex( (command) => message.includes(command.parseMatch));
+    }
+
+    parseForChatBlacklist(message){
+      return this.chatBlacklist.findIndex( (word) => message.includes(word))
+    }
+
+    buildDiscordCommand(){
+      const currentTime = new Date().getTime();
+      const lastUse = this.commandWhitelist[this.respData.commandIndex].lastUse;
+      if(lastUse + 30000 <= currentTime){
+        return `say ${this.discord}`;
       }
-      
-      iniParseChat(resp){
-          const respList = resp.split(/^Chat:\s/);
-          
-        if(respList.length > 1) return respList[1].split(',');
-      }
+      return `writetoconsole discord timeout: ${this.getPlayfab()}`;
+    }
 
-      iniParsePunishment(resp){
-        const respList = resp.split(/^Punishment:\s/);
-
-        if(respList.length > 1) return respList[1].split(',');
-      }
-      
-      matchPlayfab(string){
-        if(string.match(/^[A-Z0-9]{15,16}$/)) return true;
-
-        console.log("Failed to match playfab");
-        return false;
-      }
-
-      parseForCommand(message){
-        return this.commandWhitelist.findIndex( (command) => message.includes(command.parseMatch));
-      }
-
-      parseForChatBlacklist(message){
-        return this.chatBlacklist.findIndex( (word) => message.includes(word))
-      }
-
-      buildTpTopCommand(){
-          const args = this.getMapArgs();
-          return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
-
-      buildTpRockCommand(){
+    buildTpTopCommand(){
         const args = this.getMapArgs();
         return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    }
 
-      buildTpMiddleCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpRockCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildMuteForOneDayCommand(){
-        return `mute ${this.getPlayfab()} 1440`
-      }
+    buildTpMiddleCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpMenuCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildMuteForOneDayCommand(){
+      return `mute ${this.getPlayfab()} 1440`
+    }
 
-      buildTpPillarCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpMenuCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpCageCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpPillarCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpNetCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpCageCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpFT10Command(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpNetCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpFT102Command(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpFT10Command(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpCartCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpFT102Command(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpPenCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpCartCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 
-      buildTpStonehengeCommand(){
-        const args = this.getMapArgs();
-        return `teleportplayer ${this.getPlayfab()} ${args}`;
-      }
+    buildTpPenCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    buildTpStonehengeCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
 }
 
 module.exports = MordhauResponse;
