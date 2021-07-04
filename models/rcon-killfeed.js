@@ -1,11 +1,9 @@
-const mysql = require('mysql');
-const date = require('date-and-time');
 const connection = require('../connection');
-const Ranking = require('./ranking');
+const Leaderboard = require('./leaderboard');
 class RconKillfeed{
 
     constructor(){
-        this.ranking = new Ranking();
+        this.leaderboard = new Leaderboard();
     }
 
     saveKill(data){
@@ -20,8 +18,8 @@ class RconKillfeed{
                 if(error) throw error;
             });
 
-            this._updateRankKill(data);
-            this._updateRankDeath(data);
+            this._updateLeaderboardKill(data);
+            this._updateLeaderboardDeath(data);
     }
 
     selectVsKills(data){
@@ -38,12 +36,12 @@ class RconKillfeed{
         });
     }
 
-    _updateRankKill(data){
-        return this.ranking.updateRankKill(data);
+    _updateLeaderboardKill(data){
+        return this.leaderboard.updateKill(data);
     }
 
-    _updateRankDeath(data){
-        return this.ranking.updateRankDeath(data);
+    _updateLeaderboardDeath(data){
+        return this.leaderboard.updateDeath(data);
     }
 
     _validSaveKill(payload){

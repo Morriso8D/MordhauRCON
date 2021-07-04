@@ -1,4 +1,4 @@
-require('dotenv').config({path:__dirname+'/.env'})
+require('dotenv').config({path:__dirname+'/.env'});
 const Response = require('./resources/js/mordhau-response')
 const Rcon = require('./resources/js/mordhau-rcon');
 const Discord = require('./resources/js/discord');
