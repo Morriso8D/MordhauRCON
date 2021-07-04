@@ -14,7 +14,7 @@ class Leaderboard {
     }
 
     updateKill(data){
-        if(!this._validUpdateRank(data.killer.playfab)){
+        if(!this._validUpdateRank(data.killer.playfab) || !this._validUpdateRank(data.killed.playfab)){ //prevents bots from being recorded
             console.log(`Invalid payload passed to updateRank()`);
             return;
         }
@@ -29,7 +29,7 @@ class Leaderboard {
     }
 
     updateDeath(data){
-        if(!this._validUpdateRank(data.killed.playfab)){
+        if(!this._validUpdateRank(data.killed.playfab) || !this._validUpdateRank(data.killer.playfab)){ //prevents bots from being recorded
             console.log(`Invalid payload passed to updateRank()`);
             return;
         }
