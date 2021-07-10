@@ -106,6 +106,21 @@ class DiscordClient{
         return this._buildCommand(parsedMessage);
     }
 
+    ghostPing(message){
+        if(message.author.bot) return;
+        const users = message.mentions.users.array();
+        const roles = message.mentions.roles.array();
+        if(users.length >= 1){
+          message.reply(`ghost pinging huh? <@${users[0].id}>`);
+        }
+        if(roles.length >= 1){
+          message.reply(`ghost pininged huh? <@&${roles[0].id}>`);
+        }
+        if(message.mentions.everyone){
+          message.reply(`How dare you ghost ping everyone...`);
+        }
+    }
+
     _buildCommand(parsedMessage){
         const commandIndex = this.commands.findIndex( command => parsedMessage.command === command.name);
         const command = this.commands[commandIndex].name;

@@ -2,7 +2,6 @@ require('dotenv').config({path:__dirname+'/.env'});
 const Response = require('./resources/js/mordhau-response')
 const Rcon = require('./resources/js/mordhau-rcon');
 const Discord = require('./resources/js/discord');
-// require('./models/rcon-chat');
 const RconKillfeed = require('./models/rcon-killfeed');
 const readline = require('readline').createInterface({
   input: process.stdin,
@@ -74,7 +73,7 @@ conn.on('auth', () => {
   console.log("Got response: " + str);
   
   if(response.hasMessage(str)){
-    discord.client.channels.cache.get('839952559749201920').send(str);
+    discord.client.channels.cache.get('839952559749201920').send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
   }
 
   if(response.hasCommand(str)){
@@ -150,6 +149,20 @@ discord.client.on('message', (message) => {
     console.warn(error);
   })
 
+})
+.on('messageDelete', (message) => {
+  discord.ghostPing(message);
+})
+.on('messageUpdate', (message) => {
+  discord.ghostPing(message);
+})
+.on('guildMemberAdd', (member) => {
+  console.log('hereeee', member.guild.channels.array());
+  const channel = member.guild.channels.cache.find(ch => ch.name === 'general');
+  if(!channel) return;
+
+  channel.send(`Welcome to the server, ${member}`); 
+  member.addRole(member.guild.roles.find(role => role.name === 'Dung-covered peasant'));
 });
 
 readline.on('line', (input) => {
