@@ -1,12 +1,13 @@
 require('dotenv').config({path:__dirname+'/.env'});
-const Response = require('./resources/js/mordhau-response')
-const Rcon = require('./resources/js/mordhau-rcon');
-const Discord = require('./resources/js/discord');
+const RconController = require('./app/controllers/mordhau-rcon-controller');
+const Rcon = require('./app/services/rcon');
+const Discord = require('./app/services/discord');
 const RconKillfeed = require('./models/rcon-killfeed');
+const DiscordController = require('./app/controllers/discord-controller');
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
-})
+});
 
 
 const options = {
@@ -27,8 +28,9 @@ const sendCommand = async function (client, command) {
   }
 };
 
-let conn = new Rcon(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
-const discord = new Discord();
+const conn = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
+const discord = Discord.singleton();
+const discordController = new DiscordController();
 const rconKillfeed = new RconKillfeed();
 
 /**
@@ -48,7 +50,7 @@ const commands = [
     }
   }
 ];
-let response = new Response(commands);
+const rconController = new RconController(commands);
 
 /**
  * 
@@ -72,23 +74,23 @@ conn.on('auth', () => {
 }).on('response', (str) => {
   console.log("Got response: " + str);
   
-  if(response.hasMessage(str)){
+  if(rconController.hasMessage(str)){
     discord.client.channels.cache.get('839952559749201920').send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
   }
 
-  if(response.hasCommand(str)){
-    conn.send(response.getCommand());
+  if(rconController.hasCommand(str)){
+    conn.send(rconController.getCommand());
     console.log(`Command sent: ${response.getCommand()}`);
   }
 
-  if(response.hasBlacklistedWord(str)){
-    const mute = response.getOneDayMuteCommand();
+  if(rconController.hasBlacklistedWord(str)){
+    const mute = rconController.getOneDayMuteCommand();
     conn.send(mute.command);
     conn.send(`say Auto-mod: ${mute.name} was muted for 1 day.`);
   }
 
-  if(response.hasMatchState(str)){
-    if(response.getMatchState() == 'In progress'){ // Changed map
+  if(rconController.hasMatchState(str)){
+    if(rconController.getMatchState() == 'In progress'){ // Changed map
       // send 'info' cmd
       // get the current map
       // listen to response (hasInfo) and update the current map
@@ -96,17 +98,16 @@ conn.on('auth', () => {
     }
   }
 
-  if(response.hasPunishment(str)){
+  if(rconController.hasPunishment(str)){
         discord.client.channels.cache.get('842075143136084008').send(str);
   }
 
-  if(response.hasInfo(str)){ // updates map info
+  if(rconController.hasInfo(str)){ // updates map info
 
   }
 
-  if(response.hasKillfeed(str)){
-    // console.log(response.getKillfeed());
-    rconKillfeed.saveKill(response.getKillfeed());
+  if(rconController.hasKillfeed(str)){
+    rconKillfeed.saveKill(rconController.getKillfeed());
   }
 
 }).on('end', () => {
@@ -131,17 +132,17 @@ setInterval(()=> {
  */
 discord.client.on('message', (message) => {
   if(message.author.bot) return;
-  if(!message.content.startsWith(discord.prefix)) return;
-  if(!discord.isAuthed(message.author.id)) return;
+  if(!message.content.startsWith(discordController.prefix)) return;
+  if(!discordController.isAuthed(message.author.id)) return;
 
-  const parsedMessage = discord.parseMessage(message, discord.prefix);
+  const parsedMessage = discordController.parseMessage(message, discordController.prefix);
 
-  if(!discord.hasCommand(parsedMessage)){
+  if(!discordController.hasCommand(parsedMessage)){
     message.reply('Invalid command');
     return;
   }
 
-  sendCommand(conn, discord.getCommand(parsedMessage))
+  sendCommand(conn, discordController.getCommand(parsedMessage))
   .then(result => {
     message.reply(result);
   })
@@ -151,10 +152,10 @@ discord.client.on('message', (message) => {
 
 })
 .on('messageDelete', (message) => {
-  discord.ghostPing(message);
+  discordController.ghostPing(message);
 })
 .on('messageUpdate', (message) => {
-  discord.ghostPing(message);
+  discordController.ghostPing(message);
 })
 .on('guildMemberAdd', (member) => {
   console.log('hereeee', member.guild.channels.array());

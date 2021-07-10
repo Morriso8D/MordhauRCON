@@ -1,4 +1,5 @@
-const mysql = require('mysql');
+require('dotenv').config({path:__dirname+'/.env'});
+const mysql = require('mysql2');
 
 let instance = null;
 class MySQL{
@@ -8,10 +9,10 @@ class MySQL{
     constructor(){
         this.conn = mysql.createPool({
             connectionLimit: 10,
-            host: 'localhost',
-            user: 'root',
-            password: '',
-            database: 'cronch'
+            host: process.env.DB_HOST,
+            user: process.env.DB_USERNAME,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_DATABASE
         });
     }
 
