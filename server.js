@@ -4,6 +4,7 @@ const Rcon = require('./app/services/rcon');
 const Discord = require('./app/services/discord');
 const RconKillfeed = require('./models/rcon-killfeed');
 const DiscordController = require('./app/controllers/discord-controller');
+const Helpers = require('./app/helpers');
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
@@ -14,19 +15,6 @@ const options = {
   tcp: true,
   challenge: false,
 }
-
-const sendCommand = async function (client, command) {
-  if ((typeof command === 'string') && (client.hasAuthed)) {
-      await client.send(command);
-      return await new Promise(function(resolve, reject) {
-          client.once('response', response => { 
-            resolve(response); 
-          }).once('error', error => {
-            reject(error);
-          });
-      });
-  }
-};
 
 const conn = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
 const discord = Discord.singleton();
@@ -60,11 +48,11 @@ const rconController = new RconController(commands);
 conn.on('auth', () => {
   
   console.log("Authed!\n Enter a command:");
-  sendCommand(conn,'listen chat').then(res => {
-    sendCommand(conn,'listen matchstate').then(res => {
-      sendCommand(conn,'listen punishment').then(res => {
-        sendCommand(conn,'info').then(res => {
-          sendCommand(conn,'listen killfeed').catch(err =>console.warn(err))
+  Helpers.sendAsync(conn,'listen chat').then(res => {
+    Helpers.sendAsync(conn,'listen matchstate').then(res => {
+      Helpers.sendAsync(conn,'listen punishment').then(res => {
+        Helpers.sendAsync(conn,'info').then(res => {
+          Helpers.sendAsync(conn,'listen killfeed').catch(err =>console.warn(err))
         }).catch(err=>console.warn(err));
       }).catch(err=>console.warn(err));
     }).catch(err=>console.warn(err));
@@ -80,7 +68,7 @@ conn.on('auth', () => {
 
   if(rconController.hasCommand(str)){
     conn.send(rconController.getCommand());
-    console.log(`Command sent: ${response.getCommand()}`);
+    console.log(`Command sent: ${rconController.getCommand()}`);
   }
 
   if(rconController.hasBlacklistedWord(str)){
@@ -142,23 +130,17 @@ discord.client.on('message', (message) => {
     return;
   }
 
-  sendCommand(conn, discordController.getCommand(parsedMessage))
-  .then(result => {
+  Helpers.sendAsync(conn, discordController.getCommand(parsedMessage)).then(result => {
     message.reply(result);
-  })
-  .catch(error => {
+  }).catch(error => {
     console.warn(error);
-  })
+  });
 
-})
-.on('messageDelete', (message) => {
+}).on('messageDelete', (message) => {
   discordController.ghostPing(message);
-})
-.on('messageUpdate', (message) => {
+}).on('messageUpdate', (message) => {
   discordController.ghostPing(message);
-})
-.on('guildMemberAdd', (member) => {
-  console.log('hereeee', member.guild.channels.array());
+}).on('guildMemberAdd', (member) => {
   const channel = member.guild.channels.cache.find(ch => ch.name === 'general');
   if(!channel) return;
 
