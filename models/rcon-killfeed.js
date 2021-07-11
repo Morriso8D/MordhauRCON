@@ -1,9 +1,10 @@
-const connection = require('../connection');
-const Leaderboard = require('./leaderboard');
+const MySQL = require('../app/services/mysql');
+const Ranking = require('./ranking');
 class RconKillfeed{
 
     constructor(){
-        this.leaderboard = new Leaderboard();
+        this.ranking = new Ranking();
+        this.mySQL = MySQL.singleton();
     }
 
     saveKill(data){
@@ -14,8 +15,11 @@ class RconKillfeed{
 
             const params = {killer_playfabid: data.killer.playfab, killed_playfabid: data.killed.playfab, created_at: data.created_at};
 
-            connection.query('INSERT INTO rcon_killfeed SET ?', params, (error, result, field) => {
-                if(error) throw error;
+            this.mySQL.connect( connection => {
+                connection.query('INSERT INTO rcon_killfeed SET ?', params, (error, result, field) => {
+                    connection.release();
+                    if(error) console.warn(error);
+                });
             });
 
             this._updateLeaderboardKill(data);
@@ -30,10 +34,12 @@ class RconKillfeed{
 
         const params = [];
 
-        connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM rcon_killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
-            if(error) throw error;
-            return results;
-        });
+        this.mySQL.connect( connection => {
+            connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM rcon_killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
+                return results;
+                if(error) throw error;
+            })
+        })
     }
 
     _updateLeaderboardKill(data){

@@ -1,13 +1,14 @@
 require('dotenv').config({path:__dirname+'/.env'});
-const Response = require('./resources/js/mordhau-response')
-const Rcon = require('./resources/js/mordhau-rcon');
-const Discord = require('./resources/js/discord');
-// require('./models/rcon-chat');
+const RconController = require('./app/controllers/mordhau-rcon-controller');
+const Rcon = require('./app/services/rcon');
+const Discord = require('./app/services/discord');
 const RconKillfeed = require('./models/rcon-killfeed');
+const DiscordController = require('./app/controllers/discord-controller');
+const Helpers = require('./app/helpers');
 const readline = require('readline').createInterface({
   input: process.stdin,
   output: process.stdout
-})
+});
 
 
 const options = {
@@ -15,21 +16,9 @@ const options = {
   challenge: false,
 }
 
-const sendCommand = async function (client, command) {
-  if ((typeof command === 'string') && (client.hasAuthed)) {
-      await client.send(command);
-      return await new Promise(function(resolve, reject) {
-          client.once('response', response => { 
-            resolve(response); 
-          }).once('error', error => {
-            reject(error);
-          });
-      });
-  }
-};
-
-let conn = new Rcon(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
-const discord = new Discord();
+const conn = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
+const discord = Discord.singleton();
+const discordController = new DiscordController();
 const rconKillfeed = new RconKillfeed();
 
 /**
@@ -49,7 +38,7 @@ const commands = [
     }
   }
 ];
-let response = new Response(commands);
+const rconController = new RconController(commands);
 
 /**
  * 
@@ -59,11 +48,11 @@ let response = new Response(commands);
 conn.on('auth', () => {
   
   console.log("Authed!\n Enter a command:");
-  sendCommand(conn,'listen chat').then(res => {
-    sendCommand(conn,'listen matchstate').then(res => {
-      sendCommand(conn,'listen punishment').then(res => {
-        sendCommand(conn,'info').then(res => {
-          sendCommand(conn,'listen killfeed').catch(err =>console.warn(err))
+  Helpers.sendAsync(conn,'listen chat').then(res => {
+    Helpers.sendAsync(conn,'listen matchstate').then(res => {
+      Helpers.sendAsync(conn,'listen punishment').then(res => {
+        Helpers.sendAsync(conn,'info').then(res => {
+          Helpers.sendAsync(conn,'listen killfeed').catch(err =>console.warn(err))
         }).catch(err=>console.warn(err));
       }).catch(err=>console.warn(err));
     }).catch(err=>console.warn(err));
@@ -73,23 +62,23 @@ conn.on('auth', () => {
 }).on('response', (str) => {
   console.log("Got response: " + str);
   
-  if(response.hasMessage(str)){
-    discord.client.channels.cache.get('839952559749201920').send(str);
+  if(rconController.hasMessage(str)){
+    discord.client.channels.cache.get('839952559749201920').send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
   }
 
-  if(response.hasCommand(str)){
-    conn.send(response.getCommand());
-    console.log(`Command sent: ${response.getCommand()}`);
+  if(rconController.hasCommand(str)){
+    conn.send(rconController.getCommand());
+    console.log(`Command sent: ${rconController.getCommand()}`);
   }
 
-  if(response.hasBlacklistedWord(str)){
-    const mute = response.getOneDayMuteCommand();
+  if(rconController.hasBlacklistedWord(str)){
+    const mute = rconController.getOneDayMuteCommand();
     conn.send(mute.command);
     conn.send(`say Auto-mod: ${mute.name} was muted for 1 day.`);
   }
 
-  if(response.hasMatchState(str)){
-    if(response.getMatchState() == 'In progress'){ // Changed map
+  if(rconController.hasMatchState(str)){
+    if(rconController.getMatchState() == 'In progress'){ // Changed map
       // send 'info' cmd
       // get the current map
       // listen to response (hasInfo) and update the current map
@@ -97,17 +86,16 @@ conn.on('auth', () => {
     }
   }
 
-  if(response.hasPunishment(str)){
+  if(rconController.hasPunishment(str)){
         discord.client.channels.cache.get('842075143136084008').send(str);
   }
 
-  if(response.hasInfo(str)){ // updates map info
+  if(rconController.hasInfo(str)){ // updates map info
 
   }
 
-  if(response.hasKillfeed(str)){
-    // console.log(response.getKillfeed());
-    rconKillfeed.saveKill(response.getKillfeed());
+  if(rconController.hasKillfeed(str)){
+    rconKillfeed.saveKill(rconController.getKillfeed());
   }
 
 }).on('end', () => {
@@ -132,26 +120,35 @@ setInterval(()=> {
  */
 discord.client.on('message', (message) => {
   if(message.author.bot) return;
-  if(!message.content.startsWith(discord.prefix)) return;
-  if(!discord.isAuthed(message.author.id)) return;
+  if(!message.content.startsWith(discordController.prefix)) return;
+  if(!discordController.isAuthed(message.author.id)) return;
 
-  const parsedMessage = discord.parseMessage(message, discord.prefix);
+  const parsedMessage = discordController.parseMessage(message, discordController.prefix);
 
-  if(!discord.hasCommand(parsedMessage)){
+  if(!discordController.hasCommand(parsedMessage)){
     message.reply('Invalid command');
     return;
   }
 
-  sendCommand(conn, discord.getCommand(parsedMessage))
-  .then(result => {
+  Helpers.sendAsync(conn, discordController.getCommand(parsedMessage)).then(result => {
     message.reply(result);
-  })
-  .catch(error => {
+  }).catch(error => {
     console.warn(error);
-  })
+  });
 
+}).on('messageDelete', (message) => {
+  discordController.ghostPingDelete(message);
+}).on('messageUpdate', (oldMessage, newMessage) => {
+  discordController.ghostPingUpdate(oldMessage, newMessage);
+}).on('guildMemberAdd', (member) => {
+  const channel = member.guild.channels.cache.find(ch => ch.name === 'general');
+  if(!channel) return;
+
+  channel.send(`Welcome to the server, ${member}`); 
+  member.addRole(member.guild.roles.find(role => role.name === 'Dung-covered peasant'));
 });
 
 readline.on('line', (input) => {
   conn.send(input);
+  // discord.client.channels.cache.get('773155679262474262').send(input);
 })

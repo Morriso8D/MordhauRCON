@@ -1,8 +1,12 @@
-const Discord = require('discord.js');
 const config = require('../../config.json');
-require('dotenv').config({path:__dirname+'/.env'})
 
-class DiscordClient{
+class DiscordController{
+
+    config = config;
+
+    constructor(){
+
+    }
 
     prefix = '!';
 
@@ -75,11 +79,6 @@ class DiscordClient{
         },
     ]
 
-    constructor(){
-        this.client = new Discord.Client();
-        this.client.login(process.env.DISCORD_BOT_TOKEN);
-    }
-
     isAuthed(id){
         if(!config.authed_admins.includes(id)) return false;
         return true;
@@ -106,6 +105,39 @@ class DiscordClient{
         return this._buildCommand(parsedMessage);
     }
 
+    ghostPingDelete(message){
+        if(message.author.bot) return;
+        const users = message.mentions.users.array();
+        const roles = message.mentions.roles.array();
+        if(users.length >= 1){
+          message.reply(`ghost pinging huh? <@${users[0].id}>`);
+        }
+        if(roles.length >= 1){
+          message.reply(`ghost pininged huh? <@&${roles[0].id}>`);
+        }
+        if(message.mentions.everyone){
+          message.reply(`How dare you ghost ping everyone...`);
+        }
+    }
+
+    ghostPingUpdate(oldMessage, newMessage){
+        if(oldMessage.author.bot || newMessage.author.bot) return;
+        const oldUsers = oldMessage.mentions.users.array();
+        const oldRoles = oldMessage.mentions.roles.array();
+        const newUsers = newMessage.mentions.users.array();
+        const newRoles = oldMessage.mentions.roles.array();
+
+        if(newUsers.length !== oldUsers.length){
+            oldMessage.reply(`ghost pinging huh? <@${oldUsers[0].id}>`);
+        }
+        if(newRoles.length !== oldRoles.length){
+            oldMessage.reply(`ghost pinging huh? <@${oldRoles[0].id}`);
+        }
+        if(oldMessage.mentions.everyone && !newMessage.mentions.everyone){
+            oldMessage.reply(`How dare you ghost ping everyone...`);
+        }
+    }
+
     _buildCommand(parsedMessage){
         const commandIndex = this.commands.findIndex( command => parsedMessage.command === command.name);
         const command = this.commands[commandIndex].name;
@@ -114,4 +146,4 @@ class DiscordClient{
     }
 }
 
-module.exports = DiscordClient;
+module.exports = DiscordController;

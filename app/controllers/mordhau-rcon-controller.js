@@ -1,5 +1,5 @@
 
-class MordhauResponse{
+class MordhauRconController{
 
   constructor(commands = [], chatBlacklist = []){
     
@@ -412,4 +412,4 @@ class MordhauResponse{
     }
 }
 
-module.exports = MordhauResponse;
+module.exports = MordhauRconController;
