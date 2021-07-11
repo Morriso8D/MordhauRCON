@@ -42,7 +42,7 @@ class Leaderboard {
 
         this.mySQL.connect(connection => {
             connection.query('INSERT INTO leaderboard (playfabid,name,kills,deaths,k_d,created_at,updated_at) VALUES(?,?,0,1,0,NOW(),NOW()) ON DUPLICATE KEY UPDATE id = id, name = VALUES(name), deaths = deaths + 1, k_d = (kills / deaths), updated_at = NOW(), created_at = created_at', killedData, (error, result, field) => {
-                connection.releae();
+                connection.release();
                 if(error) throw error;
                 console.log('ranked death updated');
             });
