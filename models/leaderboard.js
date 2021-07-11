@@ -24,7 +24,7 @@ class Leaderboard {
         const killerData = [data.killer.playfab, data.killer.name];
 
         this.mySQL.connect(connection => {
-            connection.query('INSERT INTO leaderboard (playfabid,name,kills,deaths,k_d,created_at,updated_at) VALUES(?,?,1,0,1,NOW(),NOW()) ON DUPLICATE KEY UPDATE id = id, name = VALUES(name), kills = kills + 1, k_d = (kills / deaths),updated_at = NOW(), created_at = created_at', killerData, (error, result, field) => {
+            connection.query('INSERT INTO leaderboard (playfabid,name,kills,deaths,k_d,created_at,updated_at) VALUES(?,?,1,0,1,NOW(),NOW()) ON DUPLICATE KEY UPDATE id = id, name = VALUES(name), kills = kills + 1, k_d = (NULLIF(kills,0) / deaths),updated_at = NOW(), created_at = created_at', killerData, (error, result, field) => {
                 connection.release();
                 if(error) throw error;
                 console.log('ranked kill updated');
