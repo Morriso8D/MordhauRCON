@@ -1,9 +1,9 @@
 const MySQL = require('../app/services/mysql');
-const Ranking = require('./ranking');
+const Leaderboard = require('./leaderboard');
 class RconKillfeed{
 
     constructor(){
-        this.ranking = new Ranking();
+        this.leaderboard = new Leaderboard();
         this.mySQL = MySQL.singleton();
     }
 
@@ -36,10 +36,11 @@ class RconKillfeed{
 
         this.mySQL.connect( connection => {
             connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM rcon_killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
+                connection.release();
                 return results;
                 if(error) throw error;
-            })
-        })
+            });
+        });
     }
 
     _updateLeaderboardKill(data){
@@ -54,9 +55,6 @@ class RconKillfeed{
         if(typeof payload.killer === 'undefined' || typeof payload.killed === 'undefined' || typeof payload.created_at === 'undefined') return false;
         
         return true;
-    }
-
-    _validSelectVsKills(payload){
     }
 }
 
