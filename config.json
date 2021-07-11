@@ -11,8 +11,8 @@
     ],
 
     "bootstrap":[
-        "rcon",
-        "discord",
-        "commandLine"
+        {"rcon": true},
+        {"discord": true},
+        {"command_line": true}
     ]
 }

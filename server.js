@@ -137,9 +137,9 @@ discord.client.on('message', (message) => {
   });
 
 }).on('messageDelete', (message) => {
-  discordController.ghostPing(message);
-}).on('messageUpdate', (message) => {
-  discordController.ghostPing(message);
+  discordController.ghostPingDelete(message);
+}).on('messageUpdate', (oldMessage, newMessage) => {
+  discordController.ghostPingUpdate(oldMessage, newMessage);
 }).on('guildMemberAdd', (member) => {
   const channel = member.guild.channels.cache.find(ch => ch.name === 'general');
   if(!channel) return;
@@ -150,4 +150,5 @@ discord.client.on('message', (message) => {
 
 readline.on('line', (input) => {
   conn.send(input);
+  // discord.client.channels.cache.get('773155679262474262').send(input);
 })

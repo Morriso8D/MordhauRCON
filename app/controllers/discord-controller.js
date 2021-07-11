@@ -105,7 +105,7 @@ class DiscordController{
         return this._buildCommand(parsedMessage);
     }
 
-    ghostPing(message){
+    ghostPingDelete(message){
         if(message.author.bot) return;
         const users = message.mentions.users.array();
         const roles = message.mentions.roles.array();
@@ -117,6 +117,24 @@ class DiscordController{
         }
         if(message.mentions.everyone){
           message.reply(`How dare you ghost ping everyone...`);
+        }
+    }
+
+    ghostPingUpdate(oldMessage, newMessage){
+        if(oldMessage.author.bot || newMessage.author.bot) return;
+        const oldUsers = oldMessage.mentions.users.array();
+        const oldRoles = oldMessage.mentions.roles.array();
+        const newUsers = newMessage.mentions.users.array();
+        const newRoles = oldMessage.mentions.roles.array();
+
+        if(newUsers.length !== oldUsers.length){
+            oldMessage.reply(`ghost pinging huh? <@${oldUsers[0].id}>`);
+        }
+        if(newRoles.length !== oldRoles.length){
+            oldMessage.reply(`ghost pinging huh? <@${oldRoles[0].id}`);
+        }
+        if(oldMessage.mentions.everyone && !newMessage.mentions.everyone){
+            oldMessage.reply(`How dare you ghost ping everyone...`);
         }
     }
 
