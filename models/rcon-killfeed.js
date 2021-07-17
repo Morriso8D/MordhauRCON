@@ -7,23 +7,28 @@ class RconKillfeed{
         this.mySQL = MySQL.singleton();
     }
 
-    saveKill(data){
+    async saveKill(data){
         if(!this._validSaveKill(data)){
             console.log(`Invalid payload passed to SaveKill()`);
             return;
         }
 
-            const params = {killer_playfabid: data.killer.playfab, killed_playfabid: data.killed.playfab, created_at: data.created_at};
+        const killerID = await this._updateLeaderboardKill(data);
+        const killedID = await this._updateLeaderboardDeath(data);
 
-            this.mySQL.connect( connection => {
-                connection.query('INSERT INTO rcon_killfeed SET ?', params, (error, result, field) => {
-                    connection.release();
-                    if(error) console.warn(error);
-                });
+        if(killerID === null || killedID === null){
+            console.warn('Invalid payload passed to saveKill()');
+            return;
+        }
+
+        const params = {killer_leaderboard_id: killerID, killed_leaderboard_id: killedID, created_at: data.created_at, updated_at: data.created_at};
+
+        this.mySQL.connect( connection => {
+            connection.query('INSERT INTO killfeed SET ?', params, (error, result, field) => {
+                connection.release();
+                if(error) console.warn(error);
             });
-
-            this._updateLeaderboardKill(data);
-            this._updateLeaderboardDeath(data);
+        });
     }
 
     selectVsKills(data){
@@ -35,7 +40,7 @@ class RconKillfeed{
         const params = [];
 
         this.mySQL.connect( connection => {
-            connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM rcon_killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
+            connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
                 connection.release();
                 return results;
                 if(error) throw error;
@@ -44,11 +49,11 @@ class RconKillfeed{
     }
 
     _updateLeaderboardKill(data){
-        return this.leaderboard.updateKill(data);
+        return this.leaderboard.upsertKill(data);
     }
 
     _updateLeaderboardDeath(data){
-        return this.leaderboard.updateDeath(data);
+        return this.leaderboard.upsertDeath(data);
     }
 
     _validSaveKill(payload){
