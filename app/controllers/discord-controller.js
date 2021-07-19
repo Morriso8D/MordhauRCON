@@ -105,37 +105,55 @@ class DiscordController{
         return this._buildCommand(parsedMessage);
     }
 
-    ghostPingDelete(message){
+    shadowPingDelete(message){
         if(message.author.bot) return;
         const users = message.mentions.users.array();
         const roles = message.mentions.roles.array();
-        if(users.length >= 1){
-          message.reply(`ghost pinging huh? <@${users[0].id}>`);
+
+        if(users.length){
+            const userTags = users.map(x => `<@${x.id}>`);
+            message.reply(`shadow ping detected - ${userTags.join(' ')}`);
         }
-        if(roles.length >= 1){
-          message.reply(`ghost pininged huh? <@&${roles[0].id}>`);
+        if(roles.length){
+            const roleTags = roles.map(x => `<@&${x.id}>`);
+            message.reply(`shadow ping detected - ${roleTags.join(' ')}`);
         }
         if(message.mentions.everyone){
-          message.reply(`How dare you ghost ping everyone...`);
+          message.reply(`shadow ping detected - everyone...`);
         }
     }
 
-    ghostPingUpdate(oldMessage, newMessage){
+    shadowPingUpdate(oldMessage, newMessage){
         if(oldMessage.author.bot || newMessage.author.bot) return;
+        console.log('message altered');
         const oldUsers = oldMessage.mentions.users.array();
         const oldRoles = oldMessage.mentions.roles.array();
         const newUsers = newMessage.mentions.users.array();
-        const newRoles = oldMessage.mentions.roles.array();
+        const newRoles = newMessage.mentions.roles.array();
 
-        if(newUsers.length !== oldUsers.length){
-            oldMessage.reply(`ghost pinging huh? <@${oldUsers[0].id}>`);
-        }
-        if(newRoles.length !== oldRoles.length){
-            oldMessage.reply(`ghost pinging huh? <@${oldRoles[0].id}`);
-        }
-        if(oldMessage.mentions.everyone && !newMessage.mentions.everyone){
-            oldMessage.reply(`How dare you ghost ping everyone...`);
-        }
+       if(oldUsers.length > newUsers.length || oldRoles.length > newRoles.length){ // stop late mentions from flagging
+            // create an array of old and new  users/roles then compare the diff
+            let oldUserIds = oldUsers.map( x => x.id );
+            let newUserIds = newUsers.map( x => x.id );
+            let oldRoleIds = oldRoles.map( x => x.id );
+            let newRoleIds = newRoles.map( x => x.id );
+
+            const ghostPingedUserIds = oldUserIds.filter( x => !newUserIds.includes(x) );
+            const ghostPingedRoleIds = oldRoleIds.filter( x => !newRoleIds.includes(x) );
+
+            const diffUsers = oldUsers.filter( x => ghostPingedUserIds.includes(x.id) );
+            const diffRoles = oldRoles.filter( x => ghostPingedRoleIds.includes(x.id) );
+
+            if(diffUsers.length){
+                const diffUsersTag = diffUsers.map( x => `<@${x.id}>`);
+                oldMessage.reply(`shadow ping detected - ${diffUsersTag.join(' ')}`);
+            }
+
+            if(diffRoles.length){
+                const diffRolesTag = diffRoles.map( x => `<@&${x.id}>`);
+                oldMessage.reply(`shadow ping detected - ${diffRolesTag.join(' ')}`);
+            }
+       }
     }
 
     _buildCommand(parsedMessage){
