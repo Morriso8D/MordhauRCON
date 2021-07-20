@@ -40,7 +40,7 @@ class RconKillfeed{
         const params = [];
 
         this.mySQL.connect( connection => {
-            connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
+            connection.query('SELECT killer_leaderboard_id, killed_leaderboard_id, count(*) AS count FROM killfeed WHERE killer_leaderboard_id IN ? AND killed_leaderboard_id IN ? GROUP BY killer_leaderboard_id, killed_leaderboard_id', params, (error, results, field) => {
                 connection.release();
                 return results;
                 if(error) throw error;
