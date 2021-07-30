@@ -49,11 +49,11 @@ class RconKillfeed{
     }
 
     async _updateLeaderboardKill(data){
-        return await this.leaderboard.upsertKill(data);
+        return this.leaderboard.upsertKill(data).then( id => { return id; }).catch(err => console.log(err));
     }
 
     async _updateLeaderboardDeath(data){
-        return await this.leaderboard.upsertDeath(data);
+        return await this.leaderboard.upsertDeath(data).then(id => { return id;}).catch(err => console.log(err));
     }
 
     _validSaveKill(payload){
