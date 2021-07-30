@@ -27,12 +27,12 @@ class Leaderboard {
         return new Promise( (resolve, reject) => {
             this.mySQL.connect(connection => {
                 connection.query('INSERT INTO leaderboard (playfabid,name,kills,deaths,k_d,created_at,updated_at) VALUES(?,?,1,0,1,NOW(),NOW()) ON DUPLICATE KEY UPDATE id = id, name = VALUES(name), kills = kills + 1, k_d = (kills / NULLIF(deaths,0)),updated_at = NOW(), created_at = created_at', killerData, (error, result, field) => {
-                    connection.release();
                     if(error){
                         reject(error);
                     };
                     console.log('ranked kill updated');
                     resolve(result.insertId);
+                    connection.release();
                 });
             });
         });
@@ -49,12 +49,12 @@ class Leaderboard {
         return new Promise( (resolve, reject) => {
             this.mySQL.connect(connection => {
                 connection.query('INSERT INTO leaderboard (playfabid,name,kills,deaths,k_d,created_at,updated_at) VALUES(?,?,0,1,0,NOW(),NOW()) ON DUPLICATE KEY UPDATE id = id, name = VALUES(name), deaths = deaths + 1, k_d = (NULLIF(kills,0) / deaths), updated_at = NOW(), created_at = created_at', killedData, (error, result, field) => {
-                    connection.release();
                     if(error){
                         reject(error);
                     }
                     console.log('ranked death updated');
                     resolve(result.insertId);
+                    connection.release();
                 });
             });
         });
