@@ -30,9 +30,10 @@ class Leaderboard {
                     if(error){
                         reject(error);
                     };
-                    console.log('ranked kill updated');
-                    resolve(result.insertId);
                     connection.release();
+                    console.log('ranked kill updated');
+                    console.log(result);
+                    resolve(result.insertId);
                 });
             });
         });
@@ -52,9 +53,10 @@ class Leaderboard {
                     if(error){
                         reject(error);
                     }
-                    console.log('ranked death updated');
-                    resolve(result.insertId);
                     connection.release();
+                    console.log('ranked death updated');
+                    console.log(result);
+                    resolve(result.insertId);
                 });
             });
         });
