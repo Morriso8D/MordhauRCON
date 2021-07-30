@@ -48,12 +48,12 @@ class RconKillfeed{
         });
     }
 
-    _updateLeaderboardKill(data){
-        return this.leaderboard.upsertKill(data);
+    async _updateLeaderboardKill(data){
+        return await this.leaderboard.upsertKill(data);
     }
 
-    _updateLeaderboardDeath(data){
-        return this.leaderboard.upsertDeath(data);
+    async _updateLeaderboardDeath(data){
+        return await this.leaderboard.upsertDeath(data);
     }
 
     _validSaveKill(payload){

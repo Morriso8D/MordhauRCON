@@ -15,7 +15,7 @@ class Leaderboard {
         });
     }
 
-    upsertKill(data){
+    async upsertKill(data){
         if(!this._validUpdateRank(data.killer.playfab) || !this._validUpdateRank(data.killed.playfab)){ //prevents bots from being recorded
             console.log(`Invalid payload passed to updateRank()`);
             return;
@@ -31,6 +31,7 @@ class Leaderboard {
                         reject(error);
                     };
                     console.log('ranked kill updated');
+                    console.log(result);
                     resolve(result.insertId);
                 });
             });
