@@ -1,3 +1,4 @@
+
 const MySQL = require('../app/services/mysql');
 
 class Leaderboard {
@@ -31,7 +32,6 @@ class Leaderboard {
                         reject(error);
                     };
                     console.log('ranked kill updated');
-                    console.log(result);
                     resolve(result.insertId);
                 });
             });
