@@ -1,3 +1,4 @@
+
 const MySQL = require('../app/services/mysql');
 
 class Leaderboard {
@@ -15,7 +16,7 @@ class Leaderboard {
         });
     }
 
-    upsertKill(data){
+    async upsertKill(data){
         if(!this._validUpdateRank(data.killer.playfab) || !this._validUpdateRank(data.killed.playfab)){ //prevents bots from being recorded
             console.log(`Invalid payload passed to updateRank()`);
             return;
@@ -29,8 +30,11 @@ class Leaderboard {
                     connection.release();
                     if(error){
                         reject(error);
+                        return;
                     };
+                    connection.release();
                     console.log('ranked kill updated');
+                    console.log(result);
                     resolve(result.insertId);
                 });
             });
@@ -51,8 +55,10 @@ class Leaderboard {
                     connection.release();
                     if(error){
                         reject(error);
+                        return;
                     }
                     console.log('ranked death updated');
+                    console.log(result);
                     resolve(result.insertId);
                 });
             });
