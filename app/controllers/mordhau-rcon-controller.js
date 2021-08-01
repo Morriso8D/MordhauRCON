@@ -1,4 +1,5 @@
 const CommandLog = require("../../models/command-log");
+const Discord = require('../services/discord');
 
 class MordhauRconController{
 
@@ -13,18 +14,18 @@ class MordhauRconController{
     }
 
     this.commandLog = new CommandLog();
+    this.discordConn = Discord.singleton();
   }
 
   discord = 'https://discord.gg/GBZJmrR';
 
   commandWhitelist = [
       {
-        parseMatch: '!admin',
+        parseMatch: '/admin',
         exeMethod: 'buildRequestAdminCommand'
       },
       {
-        parseMatch: 'discord',
-        lastUse: new Date().getTime(),
+        parseMatch: '/discord',
         exeMethod: 'buildDiscordCommand',
       },
       {
@@ -155,11 +156,11 @@ class MordhauRconController{
       map: null,
     }
 
-    getCommand(){
+    async getCommand(){
       if(typeof this.commandWhitelist[this.respData.commandIndex].exeMethod === 'string'){ // runs String exeMethods
         return this[this.commandWhitelist[this.respData.commandIndex].exeMethod]();
       }
-      return this.commandWhitelist[this.respData.commandIndex].exeMethod(this);
+      return await this.commandWhitelist[this.respData.commandIndex].exeMethod(this);
     }
 
     getPlayfab(){
@@ -168,6 +169,10 @@ class MordhauRconController{
 
     getName(){
       return this.respData.name;
+    }
+
+    getMessage(){
+      return this.respData.message;
     }
 
     getMapArgs(){
@@ -204,7 +209,7 @@ class MordhauRconController{
 
             this.respData.playfab = respChunk[0];
             this.respData.name = respChunk[1];
-            this.respData.message = respChunk[2];
+            this.respData.message = respChunk[2].match(/^\s\((.*)\)\s(.*)/)[2];
 
           this.respData.commandIndex = this.parseForCommand(this.respData.message);
 
@@ -239,7 +244,7 @@ class MordhauRconController{
       if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
         this.respData.playfab = respChunk[0];
         this.respData.name = respChunk[1];
-        this.respData.message = respChunk[2];
+        this.respData.message = respChunk[2].match(/^\s\((.*)\)\s(.*)/)[2];
 
         if(this.parseForChatBlacklist(this.respData.message) === -1) return false;
 
@@ -251,7 +256,7 @@ class MordhauRconController{
 
       const respChunk = this.iniParseMatchState(resp);
 
-      if(typeof respChunk == 'undefined') return false; // response isn't MatchState
+      if(typeof respChunk === 'undefined') return false; // response isn't MatchState
       
       this.respData.matchState = respChunk;
 
@@ -262,7 +267,7 @@ class MordhauRconController{
 
       const respChunk = this.iniParseInfo(resp);
 
-      if(typeof respChunk == 'undefined') return false; // response isn't Info
+      if(typeof respChunk === 'undefined') return false; // response isn't Info
 
       this.respData.gamemode = respChunk.gamemode;
       this.respData.map = respChunk.map;
@@ -341,32 +346,34 @@ class MordhauRconController{
     }
 
     parseForCommand(message){
-      return this.commandWhitelist.findIndex( (command) => message.includes(command.parseMatch));
+      return this.commandWhitelist.findIndex( (command) => message.startsWith(command.parseMatch));
     }
 
     parseForChatBlacklist(message){
       return this.chatBlacklist.findIndex( (word) => message.includes(word))
     }
 
-    buildRequestAdminCommand(){
+    async buildRequestAdminCommand(){
       const currentTime = new Date().getTime();
-      this.commandLog.getLastCommand(this.getPlayfab(), '!admin').then(result => {
+      const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/admin').then(result => {return result;}).catch(err => console.log('error:',err));
+      const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
-        const lastUse = result?.created_at ?? 0; // allows null values to pass the next condition
-        console.log(lastCommand);
-        if(currentTime >= lastUse + 30000){
-          return `say ${this.getName()}, an admin request has been sent.`;
-        }else{
-          return `writetoconsole requestAdminCommand timeout: ${this.getName()} - ${this.getPlayfab()}`;
-        }
-
-      }).catch(err => console.log(err));
+      if(currentTime >= lastUse + 60000){
+        this.commandLog.saveCommand(this.getPlayfab(), this.getMessage());
+        this.discordConn.client.channels.cache.get('839952559749201920').send(`<@&770321070959493170>, ${this.getName()} requested an admin`);
+        return `say ${this.getName()}, an admin request has been sent.`;
+      }else{
+        return `writetoconsole requestAdminCommand timeout: ${this.getName()} - ${this.getPlayfab()}`;
+      }
     }
 
-    buildDiscordCommand(){
+    async buildDiscordCommand(){
       const currentTime = new Date().getTime();
-      const lastUse = this.commandWhitelist[this.respData.commandIndex].lastUse;
-      if(currentTime >= lastUse + 30000){
+      const lastCommand =  await this.commandLog.getLastCommand(this.getPlayfab(), '/discord').then(result => {return result;}).catch(err => console.log('error:',err));
+      const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
+
+      if(currentTime >= lastUse + 60000){
+        this.commandLog.saveCommand(this.getPlayfab(), '/discord');
         return `say ${this.discord}`;
       }
       return `writetoconsole discord timeout: ${this.getPlayfab()}`;

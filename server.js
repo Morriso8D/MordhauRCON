@@ -59,7 +59,7 @@ conn.on('auth', () => {
   }).catch(err=>console.warn(err));
 
 
-}).on('response', (str) => {
+}).on('response', async (str) => {
   console.log("Got response: " + str);
   
   if(rconController.hasMessage(str)){
@@ -67,8 +67,9 @@ conn.on('auth', () => {
   }
 
   if(rconController.hasCommand(str)){
-    conn.send(rconController.getCommand());
-    console.log(`Command sent: ${rconController.getCommand()}`);
+    const command = await rconController.getCommand();
+    conn.send(command);
+    console.log(`Command sent: ${command}`);
   }
 
   if(rconController.hasBlacklistedWord(str)){
