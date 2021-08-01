@@ -407,7 +407,7 @@ class MordhauRconController{
 
       if(currentTime >= lastUse + 60000){
         this.commandLog.saveCommand(this.getPlayfab(), '/leaderboard');
-        return `https://cronchduels.com/server-one/leaderboard`;
+        return `say https://cronchduels.com/server-one/leaderboard`;
       }
       return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
     }
