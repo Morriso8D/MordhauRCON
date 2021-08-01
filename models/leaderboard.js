@@ -2,13 +2,14 @@
 const MySQL = require('../app/services/mysql');
 
 class Leaderboard {
+
     constructor(){
         this.mySQL = MySQL.singleton();
     }
 
     getRank(playfab){
         this.mySQL.connect(connection => {
-            connection.query('SELECT * FROM leaderboard WHERE playfabid = ?', playfab, (error,result,field) => {
+            connection.query('SELECT rank FROM leaderboard WHERE playfabid = ?', playfab, (error,result,field) => {
                 connection.release();
                 if(error) throw error;
                 return result;

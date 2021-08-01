@@ -1,3 +1,4 @@
+const CommandLog = require("../../models/command-log");
 
 class MordhauRconController{
 
@@ -11,11 +12,16 @@ class MordhauRconController{
       this.chatBlacklist = this.chatBlacklist.concat(chatBlacklist);
     }
 
+    this.commandLog = new CommandLog();
   }
 
   discord = 'https://discord.gg/GBZJmrR';
 
   commandWhitelist = [
+      {
+        parseMatch: '!admin',
+        exeMethod: 'buildRequestAdminCommand'
+      },
       {
         parseMatch: 'discord',
         lastUse: new Date().getTime(),
@@ -158,6 +164,10 @@ class MordhauRconController{
 
     getPlayfab(){
       return this.respData.playfab;
+    }
+
+    getName(){
+      return this.respData.name;
     }
 
     getMapArgs(){
@@ -338,10 +348,25 @@ class MordhauRconController{
       return this.chatBlacklist.findIndex( (word) => message.includes(word))
     }
 
+    buildRequestAdminCommand(){
+      const currentTime = new Date().getTime();
+      this.commandLog.getLastCommand(this.getPlayfab(), '!admin').then(result => {
+
+        const lastUse = result?.created_at ?? 0; // allows null values to pass the next condition
+        console.log(lastCommand);
+        if(currentTime >= lastUse + 30000){
+          return `say ${this.getName()}, an admin request has been sent.`;
+        }else{
+          return `writetoconsole requestAdminCommand timeout: ${this.getName()} - ${this.getPlayfab()}`;
+        }
+
+      }).catch(err => console.log(err));
+    }
+
     buildDiscordCommand(){
       const currentTime = new Date().getTime();
       const lastUse = this.commandWhitelist[this.respData.commandIndex].lastUse;
-      if(lastUse + 30000 <= currentTime){
+      if(currentTime >= lastUse + 30000){
         return `say ${this.discord}`;
       }
       return `writetoconsole discord timeout: ${this.getPlayfab()}`;
