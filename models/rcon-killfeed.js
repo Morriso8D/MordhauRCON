@@ -16,10 +16,12 @@ class RconKillfeed{
         const killerID = await this._updateLeaderboardKill(data);
         const killedID = await this._updateLeaderboardDeath(data);
 
-        if(killerID === null || killedID === null){
+        if(!killerID || !killedID){
             console.warn('Invalid payload passed to saveKill()');
             return;
         }
+
+        const rankResponse = await this._updateLeaderboardRanks();
 
         const params = {killer_leaderboard_id: killerID, killed_leaderboard_id: killedID, created_at: data.created_at, updated_at: data.created_at};
 
@@ -40,7 +42,7 @@ class RconKillfeed{
         const params = [];
 
         this.mySQL.connect( connection => {
-            connection.query('SELECT killer_playfabid, killed_playfabid, count(*) AS count FROM killfeed WHERE killer_id IN ? AND killed_id IN ? GROUP BY killer_id, killed_id', params, (error, results, field) => {
+            connection.query('SELECT killer_leaderboard_id, killed_leaderboard_id, count(*) AS count FROM killfeed WHERE killer_leaderboard_id IN ? AND killed_leaderboard_id IN ? GROUP BY killer_leaderboard_id, killed_leaderboard_id', params, (error, results, field) => {
                 connection.release();
                 return results;
                 if(error) throw error;
@@ -53,7 +55,11 @@ class RconKillfeed{
     }
 
     async _updateLeaderboardDeath(data){
-        return await this.leaderboard.upsertDeath(data).then(id => { return id;}).catch(err => console.log(err));
+        return this.leaderboard.upsertDeath(data).then(id => { return id;}).catch(err => console.log(err));
+    }
+
+    async _updateLeaderboardRanks(){
+        return this.leaderboard.updateAllRanks().then(response => { return response;}).catch(err => console.log(err));
     }
 
     _validSaveKill(payload){

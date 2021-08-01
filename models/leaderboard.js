@@ -35,14 +35,13 @@ class Leaderboard {
                     };
                     connection.release();
                     console.log('ranked kill updated');
-                    console.log(result);
                     resolve(result.insertId);
                 });
             });
         });
     }
 
-    upsertDeath(data){
+    async upsertDeath(data){
         if(!this._validUpdateRank(data.killed.playfab) || !this._validUpdateRank(data.killer.playfab)){ //prevents bots from being recorded
             console.log(`Invalid payload passed to updateRank()`);
             return;
@@ -59,8 +58,32 @@ class Leaderboard {
                         return;
                     }
                     console.log('ranked death updated');
-                    console.log(result);
                     resolve(result.insertId);
+                });
+            });
+        });
+    }
+
+    async  updateAllRanks(){
+        return new Promise( (resolve, reject) => {
+            this.mySQL.connect(connection => {
+                connection.query(`
+                update leaderboard as leader
+                inner join (
+                    select l.id,l.kills,l.deaths,l.k_d,
+                    ((l.kills - l.deaths) *10 *l.k_d) as score,
+                    (select @curRank := @curRank + 1 ) as cur_rank
+                    from leaderboard as l, (select @curRank := 0) as r
+                    order by score desc
+                ) as a on leader.id = a.id
+                set leader.rank = a.cur_rank`, (error, result, field) => {
+                    connection.release();
+                    if(error){
+                        reject(error);
+                        return;
+                    }
+                    console.log('leaderboard ranks updated');
+                    resolve(result);
                 });
             });
         });
