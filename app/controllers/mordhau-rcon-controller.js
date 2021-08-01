@@ -25,6 +25,14 @@ class MordhauRconController{
         exeMethod: 'buildRequestAdminCommand'
       },
       {
+        parseMatch: '/commands',
+        exeMethod: 'buildCommandList'
+      },
+      {
+        parseMatch: '/leaderboard',
+        exeMethod: 'buildGetLeaderboardCommand'
+      },
+      {
         parseMatch: '/discord',
         exeMethod: 'buildDiscordCommand',
       },
@@ -362,9 +370,8 @@ class MordhauRconController{
         this.commandLog.saveCommand(this.getPlayfab(), this.getMessage());
         this.discordConn.client.channels.cache.get('839952559749201920').send(`<@&770321070959493170>, ${this.getName()} requested an admin`);
         return `say ${this.getName()}, an admin request has been sent.`;
-      }else{
-        return `writetoconsole requestAdminCommand timeout: ${this.getName()} - ${this.getPlayfab()}`;
       }
+      return `writetoconsole requestAdminCommand timeout: ${this.getName()} - ${this.getPlayfab()}`;
     }
 
     async buildDiscordCommand(){
@@ -377,6 +384,32 @@ class MordhauRconController{
         return `say ${this.discord}`;
       }
       return `writetoconsole discord timeout: ${this.getPlayfab()}`;
+    }
+
+    async buildCommandList(){
+      const currentTime = new Date().getTime();
+      const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/commands').then(result => {return result;}).catch(err => console.log('error:',err));
+      const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
+
+      if(currentTime >= lastUse + 60000){
+        this.commandLog.saveCommand(this.getPlayfab(), '/commands');
+        // commands = this.commandWhitelist.filter( command =>  command.mapArgs[this.respData.map] ?? false );
+        // console.log(commands);
+        return `Oops something went wrong... Visit ${this.discord} for a full list of commands`;
+      }
+      return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
+    }
+
+    async buildGetLeaderboardCommand(){
+      const currentTime = new Date().getTime();
+      const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/leaderboard').then(result => {return result;}).catch(err => console.log('error:',err));
+      const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
+
+      if(currentTime >= lastUse + 60000){
+        this.commandLog.saveCommand(this.getPlayfab(), '/leaderboard');
+        return `https://cronchduels.com/server-one/leaderboard`;
+      }
+      return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
     }
 
     buildTpTopCommand(){
