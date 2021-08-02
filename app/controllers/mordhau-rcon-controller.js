@@ -1,17 +1,15 @@
-require('dotenv').config({path:__dirname+'/.env'});
 const CommandLog = require("../../models/command-log");
 const Discord = require('../services/discord');
-const Rcon = require('../services/rcon');
 
 class MordhauRconController{
 
-  constructor(commands = [], chatBlacklist = []){
+  constructor(rcon, commands = [], chatBlacklist = []){
     
-    if(commands.length > 0){
+    if(commands.length){
       this.commandWhitelist = this.commandWhitelist.concat(commands);
     }
 
-    if(chatBlacklist.length > 0){
+    if(chatBlacklist.length){
       this.chatBlacklist = this.chatBlacklist.concat(chatBlacklist);
     }
 
@@ -22,7 +20,7 @@ class MordhauRconController{
 
     this.commandLog = new CommandLog();
     this.discordConn = Discord.singleton();
-    this.rcon = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
+    this.rcon = rcon;
   }
 
   discord = 'https://discord.gg/GBZJmrR';

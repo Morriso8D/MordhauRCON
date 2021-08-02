@@ -39,7 +39,7 @@ const commands = [
     }
   }
 ];
-const rconController = new RconController(commands);
+const rconController = new RconController(conn, commands);
 
 /**
  * 
