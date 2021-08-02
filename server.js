@@ -26,12 +26,13 @@ const rconKillfeed = new RconKillfeed();
  */
 const commands = [
   {
-    parseMatch: '/tp sky',
+    parseMatch: '/tp oopsie',
     mapArgs: {
       'Contraband': 'x=0,y=0,z=10000',
       'Arena':  'x=0,y=0,z=10000',
       'Moshpit': 'x=0,y=0,z=10000'
     },
+    info: "don\'t do it...",
     exeMethod: (response) => {
       const args = response.getMapArgs();
       return `teleportplayer ${response.getPlayfab()} ${args}`;

@@ -22,26 +22,31 @@ class MordhauRconController{
   commandWhitelist = [
       {
         parseMatch: '/admin',
-        exeMethod: 'buildRequestAdminCommand'
+        exeMethod: 'buildRequestAdminCommand',
+        info: 'Request an admin'
       },
       {
         parseMatch: '/commands',
-        exeMethod: 'buildCommandList'
+        exeMethod: 'buildCommandList',
+        info: 'List of available commands'
       },
       {
         parseMatch: '/leaderboard',
-        exeMethod: 'buildGetLeaderboardCommand'
+        exeMethod: 'buildGetLeaderboardCommand',
+        info: 'Link to our leaderboard'
       },
       {
         parseMatch: '/discord',
         exeMethod: 'buildDiscordCommand',
+        info: 'Link to our discord'
       },
       {
         parseMatch: '/tp rock',
         exeMethod: 'buildTpRockCommand',
         mapArgs: {
           'Contraband':'x=-13200,y=7100,z=400',
-        } 
+        },
+        info: 'Teleport' 
       },
       {
         parseMatch: '/tp top',
@@ -55,7 +60,8 @@ class MordhauRconController{
           'Tourney':'x=0,y=0,z=2000',
           'Truce':'x=0,y=0,z=2000',
           'Moshpit':'x=1,y=5000,z=3500'
-        } 
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp middle',
@@ -69,7 +75,8 @@ class MordhauRconController{
           'Tourney':'x=0,y=0,z=500',
           'Truce':'x=0,y=0,z=0',
           'Moshpit':'x=1,y=5000,z=2200'
-        } 
+        },
+        info: 'Teleport' 
       },
       {
         parseMatch: '/tp menu',
@@ -79,56 +86,64 @@ class MordhauRconController{
           'The Pit':'x=-5500,y=-2700,z=1000',
           'Highlands':'x=5567,y=-19298,z=-3077',
           'Truce':'x=2786,y=2007,z=134',
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp pillar',
         exeMethod: 'buildTpPillarCommand',
         mapArgs: {
           'Contraband':'x=400,y=0,z=2000'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp cage',
         exeMethod: 'buildTpCageCommand',
         mapArgs: {
           'Highlands': 'x=10264,y=-11758,z=-3450'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp cart',
         exeMethod: 'buildTpCartCommand',
         mapArgs: {
           'Highlands': 'x=8391,y=-15256,z=-3360'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp stonehenge',
         exeMethod: 'buildTpStonehengeCommand',
         mapArgs: {
           'Highlands': 'x=-32940,y=-45509,z=-2378'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp pen',
         exeMethod: 'buildTpPenCommand',
         mapArgs: {
           'Highlands': 'x=8610,y=-16307,z=-3359'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp net',
         exeMethod: 'buildTpNetCommand',
         mapArgs: {
           'Contraband': 'x=-500,y=-700,z=2300'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp arena2',
         exeMethod: 'buildTpFT10Command',
         mapArgs: {
           'Contraband': 'x=3200,y=3500,z=4000'
-        }
+        },
+        info: 'Teleport'
       },
       {
         parseMatch: '/tp arena',
@@ -136,7 +151,8 @@ class MordhauRconController{
         mapArgs: {
           'Contraband': 'x=3200, y=-3500,z=4000',
           'Moshpit': 'x=-10000,y=5000,z=6400',
-        }
+        },
+        info: 'Teleport'
       }
   ];
 
@@ -366,7 +382,7 @@ class MordhauRconController{
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/admin').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
-      if(currentTime >= lastUse + 60000){
+      if(currentTime >= lastUse + 120000){
         this.commandLog.saveCommand(this.getPlayfab(), this.getMessage());
         this.discordConn.client.channels.cache.get('839952559749201920').send(`<@&770321070959493170>, ${this.getName()} requested an admin`);
         return `say ${this.getName()}, an admin request has been sent.`;
@@ -379,7 +395,7 @@ class MordhauRconController{
       const lastCommand =  await this.commandLog.getLastCommand(this.getPlayfab(), '/discord').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
-      if(currentTime >= lastUse + 60000){
+      if(currentTime >= lastUse + 120000){
         this.commandLog.saveCommand(this.getPlayfab(), '/discord');
         return `say ${this.discord}`;
       }
@@ -391,12 +407,31 @@ class MordhauRconController{
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/commands').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
-      if(currentTime >= lastUse + 60000){
+      if(currentTime >= lastUse + 120000){
         this.commandLog.saveCommand(this.getPlayfab(), '/commands');
-        // commands = this.commandWhitelist.filter( command =>  command.mapArgs[this.respData.map] ?? false );
-        // console.log(commands);
-        return `Oops something went wrong... Visit ${this.discord} for a full list of commands`;
+
+        const filteredCommands = this.commandWhitelist.filter( command =>  {
+          if(typeof command.mapArgs === 'undefined'){
+            return true;
+          }
+
+          return (typeof command.mapArgs[this.getMap()] !== 'undefined');
+
+        });
+
+        const parseMatches =  filteredCommands.map( command => {
+          if(command.info){
+            return `"${command.parseMatch}" - ${command.info}`
+          }
+
+          return `"${command.parseMatch}"`;
+        });
+        
+        const commands =  parseMatches.join('\n');
+
+        return `say ${commands}`;
       }
+
       return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
     }
 
