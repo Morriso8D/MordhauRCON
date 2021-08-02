@@ -46,19 +46,15 @@ const rconController = new RconController(commands);
  * RCON Events
  * 
  */
-conn.on('auth', () => {
+conn.on('auth', async () => {
   
   console.log("Authed!\n Enter a command:");
-  Helpers.sendAsync(conn,'listen chat').then(res => {
-    Helpers.sendAsync(conn,'listen matchstate').then(res => {
-      Helpers.sendAsync(conn,'listen punishment').then(res => {
-        Helpers.sendAsync(conn,'info').then(res => {
-          Helpers.sendAsync(conn,'listen killfeed').catch(err =>console.warn(err))
-        }).catch(err=>console.warn(err));
-      }).catch(err=>console.warn(err));
-    }).catch(err=>console.warn(err));
-  }).catch(err=>console.warn(err));
-
+  
+  await Helpers.sendAsync(conn, 'listen chat');
+  await Helpers.sendAsync(conn, 'listen matchstate');
+  await Helpers.sendAsync(conn, 'listen punishment');
+  await Helpers.sendAsync(conn, 'listen killfeed');
+  await Helpers.sendAsync(conn, 'info');
 
 }).on('response', async (str) => {
   console.log("Got response: " + str);
