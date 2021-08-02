@@ -49,7 +49,7 @@ const rconController = new RconController(commands);
 conn.on('auth', async () => {
   
   console.log("Authed!\n Enter a command:");
-  
+
   await Helpers.sendAsync(conn, 'listen chat');
   await Helpers.sendAsync(conn, 'listen matchstate');
   await Helpers.sendAsync(conn, 'listen punishment');
@@ -60,36 +60,29 @@ conn.on('auth', async () => {
   console.log("Got response: " + str);
   
   if(rconController.hasMessage(str)){
-    discord.client.channels.cache.get('839952559749201920').send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
+    rconController.handleMessage(str);
   }
 
   if(rconController.hasCommand(str)){
     const command = await rconController.getCommand();
-    conn.send(command);
-    console.log(`Command sent: ${command}`);
+    rconController.handleCommand(command);
   }
 
   if(rconController.hasBlacklistedWord(str)){
     const mute = rconController.getOneDayMuteCommand();
-    conn.send(mute.command);
-    conn.send(`say Auto-mod: ${mute.name} was muted for 1 day.`);
+    rconController.handleBlacklistedWord(mute);
   }
 
   if(rconController.hasMatchState(str)){
-    if(rconController.getMatchState() == 'In progress'){ // Changed map
-      // send 'info' cmd
-      // get the current map
-      // listen to response (hasInfo) and update the current map
-      conn.send('info');
-    }
+    rconController.handleMatchState();
   }
 
   if(rconController.hasPunishment(str)){
-        discord.client.channels.cache.get('842075143136084008').send(str);
+    rconController.handlePunishment(str);
   }
 
-  if(rconController.hasInfo(str)){ // updates map info
-
+  if(rconController.hasInfo(str)){
+    // updates map info
   }
 
   if(rconController.hasKillfeed(str)){

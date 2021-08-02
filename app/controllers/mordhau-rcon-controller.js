@@ -1,5 +1,7 @@
+require('dotenv').config({path:__dirname+'/.env'});
 const CommandLog = require("../../models/command-log");
 const Discord = require('../services/discord');
+const Rcon = require('../services/rcon');
 
 class MordhauRconController{
 
@@ -13,8 +15,14 @@ class MordhauRconController{
       this.chatBlacklist = this.chatBlacklist.concat(chatBlacklist);
     }
 
+    const options = {
+      tcp: true,
+      challenge: false,
+    }
+
     this.commandLog = new CommandLog();
     this.discordConn = Discord.singleton();
+    this.rcon = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
   }
 
   discord = 'https://discord.gg/GBZJmrR';
@@ -304,6 +312,34 @@ class MordhauRconController{
 
       if(typeof respChunk === 'undefined') return false;
       return true;
+    }
+
+    handleMessage(str){
+      this.discordConn.client.channels.cache.get('839952559749201920').send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
+    }
+
+    handleCommand(command){
+      this.rcon.send(command);
+      console.log(`Command sent: ${command}`);
+    }
+
+    handleBlacklistedWord(mute){
+      this.rcon.send(mute.command);
+      this.rcon.send(`say Auto-mod: ${mute.name} was muted for 1 day.`);
+    }
+
+    handleMatchState(){
+      if(this.getMatchState() == 'In progress'){ // Changed map
+        // send 'info' cmd
+        // get the current map
+        // listen to response (hasInfo) and update the current map
+        this.rcon.send('info');
+      }
+    }
+
+    handlePunishment(str){
+      // reports punishment to discord
+      this.discordConn.client.channels.cache.get('842075143136084008').send(str);
     }
 
     iniParseInfo(resp){
