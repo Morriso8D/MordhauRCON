@@ -374,7 +374,7 @@ class MordhauRconController{
       await Helpers.sendAsync(this.rcon, 'playerlist');
 
       if(this.respData.playerlist.length){
-        const playfabids = this.respData.playerlist.join(',');
+        const playfabids = this.respData.playerlist;
         const leaderboard = await this.leaderboard.getRanks(playfabids).then(result => {return result;}).catch(error => console.log(error));
       
         console.log('leaderboard: ',leaderboard);
