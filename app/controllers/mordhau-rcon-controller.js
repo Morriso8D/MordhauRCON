@@ -366,6 +366,17 @@ class MordhauRconController{
       this.discordConn.client.channels.cache.get('842075143136084008').send(str);
     }
 
+      /* 
+      * TODO:
+      * - get players online (needs player names too) -- done
+      * - query leaderboard against player list -- done
+      * - update player names with response -- done
+      * - (possibly consider only updating every 10 kills?) -- done
+      * - loop over playerlist and rename with a prefix of '#?' -- done
+      * - fix eventemitter memory leak.
+      * - get player names from playerlist rather than leaderboard (logic already written below but commented out)
+      */
+
     /**
      * prefixes player ranks to their in-game names
      */
@@ -376,10 +387,20 @@ class MordhauRconController{
       if(this.respData.playerlist.length){
         const playfabids = this.respData.playerlist;
         const leaderboard = await this.leaderboard.getRanks(playfabids).then(result => {return result;}).catch(error => console.log(error));
-      
-        console.log('leaderboard: ',leaderboard);
+        // console.log('leaderboard: ',leaderboard);
+
+        let i;
+        const j = leaderboard.length;
+
+        for(i = 0; i < j; i++){
+          const {rank, playfabid, name} = leaderboard[i];
+            console.log(this.rcon.listenerCount('response'));
+            await Helpers.sendAsync(this.rcon, `renameplayer ${playfabid} #${rank} ${name}`);
+        }
       }
     }
+
+
 
     /**
      * 
@@ -388,18 +409,9 @@ class MordhauRconController{
     async handleKill(kill){
       await this.Killfeed.saveKill(kill);
       this.respData.rankKillCount++;
-      /* 
-      * TODO:
-      * - get players online (needs player names too)
-      * - query leaderboard against player list
-      * - update player names with response
-      * - (possibly consider only updating every 10 kills?)
-      * - loop over playerlist and rename with a prefix of '#?'
-      */
-     console.log(this.respData.rankKillCount);
 
-      if(this.respData.rankKillCount >= 0){
-        await this.handleRenameWithRank();
+      if(this.respData.rankKillCount >= 5){
+        this.handleRenameWithRank();
       }
       
     }

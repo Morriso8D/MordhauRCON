@@ -15,9 +15,8 @@ class Leaderboard {
 
         return new Promise( (resolve, reject) => {
             this.mySQL.connect(connection => {
-                connection.query('SELECT rank, playfabid, name FROM leaderboard WHERE playfabid in (?)', playfabid, (error,result,field) => {
+                connection.query('SELECT rank, playfabid, name FROM leaderboard WHERE playfabid in (?)', [playfabid], (error,result,field) => {
                     connection.release();
-                    console.log('error 🐞', error);
                     if(error){
                         reject(error);
                         return;
