@@ -7,19 +7,31 @@ class Leaderboard {
         this.mySQL = MySQL.singleton();
     }
 
-    getRank(playfab){
-        this.mySQL.connect(connection => {
-            connection.query('SELECT rank FROM leaderboard WHERE playfabid = ?', playfab, (error,result,field) => {
-                connection.release();
-                if(error) throw error;
-                return result;
+    async getRanks(playfabid){
+        if(!playfabid){
+            console.log(`🧐 Null parameter passed to leaderboard.js:getRanks()`);
+            return;
+        }
+
+        return new Promise( (resolve, reject) => {
+            this.mySQL.connect(connection => {
+                connection.query('SELECT rank, playfabid, name FROM leaderboard WHERE playfabid in (?)', playfabid, (error,result,field) => {
+                    connection.release();
+                    console.log('error 🐞', error);
+                    if(error){
+                        reject(error);
+                        return;
+                    }
+                    console.log('playfabids 🧐', playfabid);
+                    resolve(result);
+                });
             });
         });
     }
 
     async upsertKill(data){
         if(!this._validUpdateRank(data.killer.playfab) || !this._validUpdateRank(data.killed.playfab)){ //prevents bots from being recorded
-            console.log(`Invalid payload passed to updateRank()`);
+            console.log(`🧐 Invalid parameter passed to leaderboard:updateRank()`);
             return;
         }
 
@@ -33,7 +45,6 @@ class Leaderboard {
                         reject(error);
                         return;
                     };
-                    connection.release();
                     console.log('ranked kill updated');
                     resolve(result.insertId);
                 });
@@ -43,7 +54,7 @@ class Leaderboard {
 
     async upsertDeath(data){
         if(!this._validUpdateRank(data.killed.playfab) || !this._validUpdateRank(data.killer.playfab)){ //prevents bots from being recorded
-            console.log(`Invalid payload passed to updateRank()`);
+            console.log(`🧐 Invalid parameter passed to leaderboard:updateRank()`);
             return;
         }
 

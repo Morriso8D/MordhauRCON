@@ -1,5 +1,8 @@
 const CommandLog = require("../../models/command-log");
 const Discord = require('../services/discord');
+const Killfeed = require('../../models/rcon-killfeed');
+const Leaderboard = require('../../models/leaderboard');
+const Helpers = require('../helpers');
 
 class MordhauRconController{
 
@@ -21,6 +24,8 @@ class MordhauRconController{
     this.commandLog = new CommandLog();
     this.discordConn = Discord.singleton();
     this.rcon = rcon;
+    this.Killfeed = new Killfeed();
+    this.leaderboard = new Leaderboard();
   }
 
   discord = 'https://discord.gg/GBZJmrR';
@@ -184,6 +189,8 @@ class MordhauRconController{
       matchState: null,
       gamemode: null,
       map: null,
+      playerlist: null,
+      rankKillCount: null,
     }
 
     async getCommand(){
@@ -230,6 +237,10 @@ class MordhauRconController{
 
     getKillfeed(){
       return this.respData.killfeed;
+    }
+
+    getPlayerlist(){
+      return this.respData.playerlist;
     }
     
     hasCommand(resp){
@@ -305,6 +316,17 @@ class MordhauRconController{
       return true; // response is Info
     }
 
+    hasPlayerlist(resp){
+      const respChunk = this.iniParsePlayerlist(resp);
+
+      if(typeof respChunk !== 'undefined'){
+
+        this.respData.playerlist = respChunk;
+
+        return true;
+      }
+    }
+
     hasPunishment(resp){
       const respChunk = this.iniParsePunishment(resp);
 
@@ -335,9 +357,51 @@ class MordhauRconController{
       }
     }
 
+    /**
+     * 
+     * @param {string} str 
+     */
     handlePunishment(str){
       // reports punishment to discord
       this.discordConn.client.channels.cache.get('842075143136084008').send(str);
+    }
+
+    /**
+     * prefixes player ranks to their in-game names
+     */
+    async handleRenameWithRank(){
+      this.respData.rankKillCount = 0;
+      await Helpers.sendAsync(this.rcon, 'playerlist');
+
+      if(this.respData.playerlist.length){
+        const playfabids = this.respData.playerlist.join(',');
+        const leaderboard = await this.leaderboard.getRanks(playfabids).then(result => {return result;}).catch(error => console.log(error));
+      
+        console.log('leaderboard: ',leaderboard);
+      }
+    }
+
+    /**
+     * 
+     * @param {object} kill 
+     */
+    async handleKill(kill){
+      await this.Killfeed.saveKill(kill);
+      this.respData.rankKillCount++;
+      /* 
+      * TODO:
+      * - get players online (needs player names too)
+      * - query leaderboard against player list
+      * - update player names with response
+      * - (possibly consider only updating every 10 kills?)
+      * - loop over playerlist and rename with a prefix of '#?'
+      */
+     console.log(this.respData.rankKillCount);
+
+      if(this.respData.rankKillCount >= 0){
+        await this.handleRenameWithRank();
+      }
+      
     }
 
     iniParseInfo(resp){
@@ -351,10 +415,45 @@ class MordhauRconController{
       }
     }
 
+    iniParsePlayerlist(resp){
+      if(resp.match(/,\s(team)\s[0-9]{1,2}/)){
+        const playerlist = resp.match(/([A-Z0-9]{14,16})/g);
+
+        return playerlist;  
+      }
+    }
+
+    // iniParsePlayerlist(resp){
+    //   if(resp.match(/,\s(team)\s[0-9]{1,2}/)){
+    //     const playfabids = resp.match(/([A-Z0-9]{14,16})/g);
+    //     const playerNames = resp.matchAll(/, (.*),\s[0-9]{1,}\sms/g);
+
+    //     if(playfabids.length !== playerNames.length){
+    //       console.warn(`error: playerlist parse failure 😩`);
+    //       return;
+    //     }
+
+    //     let playerlist = [];
+
+    //     for(const index in playerNames){
+    //       playerlist.push({playfabid: playfabids[index], name: playerNames[index]});
+    //     }
+
+    //     return playerlist;
+    //   }
+    // }
+
     iniParseKillfeed(resp){
       let respList = resp.split(/^Killfeed:\s/);
+      const playfabids = resp.match(/([A-Z0-9]{14,16})/g);
 
+      // checks if the message is a killfeed and if it contains two players (not a bot)
       if(respList.length > 1) {
+
+        if(playfabids.length <= 1){
+          console.log(`${playfabids} killed a bot 🤖`);
+          return;
+        }
         let data = {players: []};
 
         respList[1] = respList[1].split(/.?:\s/);
@@ -362,6 +461,7 @@ class MordhauRconController{
 
         for(let player in players){
           let name = players[player].split(/[A-Z0-9]{14,16}\s/)[1];
+          name = name.slice(1, name.length - 1); // removes brackets from name e.g. (plzHelpM3) to plzHelpM3
           let id = players[player].split(' ')[0];
           data.players.push({playfab:id, name:name});
         }

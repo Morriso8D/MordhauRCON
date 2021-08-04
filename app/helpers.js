@@ -7,9 +7,11 @@ class Helpers{
         if ((typeof command === 'string') && (conn.hasAuthed)) {
             await conn.send(command);
             return await new Promise(function(resolve, reject) {
-                conn.once('response', response => { 
+                conn.once('response', function responseListener(response){ 
+                    conn.removeListener('response', responseListener);
                     resolve(response); 
-                }).once('error', error => {
+                }).once('error', function errorListener(error){
+                    conn.removeListener('error', errorListener);
                     reject(error);
                 });
             });

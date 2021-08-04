@@ -2,7 +2,6 @@ require('dotenv').config({path:__dirname+'/.env'});
 const RconController = require('./app/controllers/mordhau-rcon-controller');
 const Rcon = require('./app/services/rcon');
 const Discord = require('./app/services/discord');
-const RconKillfeed = require('./models/rcon-killfeed');
 const DiscordController = require('./app/controllers/discord-controller');
 const Helpers = require('./app/helpers');
 const readline = require('readline').createInterface({
@@ -19,7 +18,7 @@ const options = {
 const conn = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
 const discord = Discord.singleton();
 const discordController = new DiscordController();
-const rconKillfeed = new RconKillfeed();
+
 
 /**
  * Example extending
@@ -86,7 +85,12 @@ conn.on('auth', async () => {
   }
 
   if(rconController.hasKillfeed(str)){
-    rconKillfeed.saveKill(rconController.getKillfeed());
+    const kill = rconController.getKillfeed();
+    await rconController.handleKill(kill);
+  }
+
+  if(rconController.hasPlayerlist(str)){
+    // updates playerlist
   }
 
 }).on('end', () => {
