@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-require('dotenv').config({path:__dirname+'/.env'})
+require('dotenv').config()
 
 let instance = null;
 class DiscordClient{

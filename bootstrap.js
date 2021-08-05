@@ -5,11 +5,13 @@ const config = require('./config.json');
  * @return configurable setup constraints
  */
 
-let app = [require('./foundation/rcon')];
+let app = [];
 
-if(typeof config.bootstrap.discord !== 'undefined') app.push(require('./foundation/discord'));
+if(config.bootstrap.discord) app.push('./foundation/discord');
 
-if(typeof config.bootstrap.command_line !== 'undefined') app.push(require('./foundation/command-line'));
+if(config.bootstrap.command_line) app.push('./foundation/command-line');
 
 
-return app;
+
+
+module.exports = app;

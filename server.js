@@ -1,12 +1,15 @@
-require('dotenv').config({path:__dirname+'/.env'});
+/**
+ * This is the bot's main entry point. Feel free to modify it as you see fit. 
+ **** WARNING: Changes outside of this file could be lost if the repo is updated! ****
+ */
+
+require('dotenv').config();
 const RconController = require('./app/controllers/mordhau-rcon-controller');
 const Rcon = require('./app/services/rcon');
-const Discord = require('./app/services/discord');
-const DiscordController = require('./app/controllers/discord-controller');
 const Helpers = require('./app/helpers');
-const readline = require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout
+const bootstrap = require('./bootstrap');
+bootstrap.forEach( foundation => {
+  require(foundation);
 });
 
 
@@ -16,23 +19,21 @@ const options = {
 }
 
 const conn = Rcon.singleton(process.env.RCON_HOST, process.env.RCON_PORT, process.env.RCON_SECRET, options);
-const discord = Discord.singleton();
-const discordController = new DiscordController();
 
 
 /**
- * Example extending
+ * Example extending server commands
  */
 const commands = [
   {
-    parseMatch: '/tp oopsie',
-    mapArgs: {
-      'Contraband': 'x=0,y=0,z=10000',
-      'Arena':  'x=0,y=0,z=10000',
-      'Moshpit': 'x=0,y=0,z=10000'
+    parseMatch: '/tp oopsie', // required
+    mapArgs: { // optional
+      'Contraband': 'x=0,y=0,z=100000',
+      'Arena':  'x=0,y=0,z=100000',
+      'Moshpit': 'x=0,y=0,z=100000'
     },
-    info: "don\'t do it...",
-    exeMethod: (response) => {
+    info: "don\'t do it...", // optional
+    exeMethod: (response) => { // required - returns a mordhau rcon command as a string
       const args = response.getMapArgs();
       return `teleportplayer ${response.getPlayfab()} ${args}`;
     }
@@ -49,6 +50,7 @@ conn.on('auth', async () => {
   
   console.log("Authed!\n Enter a command:");
 
+  // initiate listening events
   await Helpers.sendAsync(conn, 'listen chat');
   await Helpers.sendAsync(conn, 'listen matchstate');
   await Helpers.sendAsync(conn, 'listen punishment');
@@ -103,47 +105,7 @@ conn.on('auth', async () => {
 
 conn.connect();
 
+// prevents mordhau from disconnecting when left idle
 setInterval(()=> {
   conn.send('alive')
 },30000 )
-
-
-/**
- * 
- * Discord Events
- * 
- */
-discord.client.on('message', (message) => {
-  if(message.author.bot) return;
-  if(!message.content.startsWith(discordController.prefix)) return;
-  if(!discordController.isAuthed(message.author.id)) return;
-
-  const parsedMessage = discordController.parseMessage(message, discordController.prefix);
-
-  if(!discordController.hasCommand(parsedMessage)){
-    message.reply('Invalid command');
-    return;
-  }
-
-  Helpers.sendAsync(conn, discordController.getCommand(parsedMessage)).then(result => {
-    message.reply(result);
-  }).catch(error => {
-    console.warn(error);
-  });
-
-}).on('messageDelete', (message) => {
-  discordController.shadowPingDelete(message);
-}).on('messageUpdate', (oldMessage, newMessage) => {
-  discordController.shadowPingUpdate(oldMessage, newMessage);
-}).on('guildMemberAdd', (member) => {
-  const channel = member.guild.channels.cache.find(ch => ch.name === 'general');
-  if(!channel) return;
-
-  channel.send(`Welcome to the server, ${member}`); 
-  member.addRole(member.guild.roles.find(role => role.name === 'Dung-covered peasant'));
-});
-
-readline.on('line', (input) => {
-  conn.send(input);
-  // discord.client.channels.cache.get('773155679262474262').send(input, {tts: true});
-})
