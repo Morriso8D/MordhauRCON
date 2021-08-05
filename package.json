@@ -1,20 +1,19 @@
 {
   "name": "rcon1",
   "version": "1.0.0",
-  "description": "",
+  "description": "A multifunctional RCON and discord bot to connect with a Mordhau server. See github for full usage and features.",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Alex Morris",
+  "license": "MIT",
   "dependencies": {
     "date-and-time": "^1.0.0",
     "discord.js": "^12.5.3",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "mysql2": "^2.2.5",
-    "rcon": "^1.0.3"
+    "mysql2": "^2.2.5"
   }
 }

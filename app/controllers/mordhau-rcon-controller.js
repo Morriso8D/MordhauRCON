@@ -2,7 +2,6 @@ const CommandLog = require("../../models/command-log");
 const Discord = require('../services/discord');
 const Killfeed = require('../../models/rcon-killfeed');
 const Leaderboard = require('../../models/leaderboard');
-const Helpers = require('../helpers');
 
 class MordhauRconController{
 
@@ -366,41 +365,6 @@ class MordhauRconController{
       this.discordConn.client.channels.cache.get('842075143136084008').send(str);
     }
 
-      /* 
-      * TODO:
-      * - get players online (needs player names too) -- done
-      * - query leaderboard against player list -- done
-      * - update player names with response -- done
-      * - (possibly consider only updating every 10 kills?) -- done
-      * - loop over playerlist and rename with a prefix of '#?' -- done
-      * - fix eventemitter memory leak.
-      * - get player names from playerlist rather than leaderboard (logic already written below but commented out)
-      */
-
-    /**
-     * prefixes player ranks to their in-game names
-     */
-    async handleRenameWithRank(){
-      this.respData.rankKillCount = 0;
-      await Helpers.sendAsync(this.rcon, 'playerlist');
-
-      if(this.respData.playerlist.length){
-        const playfabids = this.respData.playerlist;
-        const leaderboard = await this.leaderboard.getRanks(playfabids).then(result => {return result;}).catch(error => console.log(error));
-        // console.log('leaderboard: ',leaderboard);
-
-        let i;
-        const j = leaderboard.length;
-
-        for(i = 0; i < j; i++){
-          const {rank, playfabid, name} = leaderboard[i];
-            console.log(this.rcon.listenerCount('response'));
-            await Helpers.sendAsync(this.rcon, `renameplayer ${playfabid} #${rank} ${name}`);
-        }
-      }
-    }
-
-
 
     /**
      * 
@@ -408,12 +372,6 @@ class MordhauRconController{
      */
     async handleKill(kill){
       await this.Killfeed.saveKill(kill);
-      this.respData.rankKillCount++;
-
-      if(this.respData.rankKillCount >= 5){
-        this.handleRenameWithRank();
-      }
-      
     }
 
     iniParseInfo(resp){
@@ -434,26 +392,6 @@ class MordhauRconController{
         return playerlist;  
       }
     }
-
-    // iniParsePlayerlist(resp){
-    //   if(resp.match(/,\s(team)\s[0-9]{1,2}/)){
-    //     const playfabids = resp.match(/([A-Z0-9]{14,16})/g);
-    //     const playerNames = resp.matchAll(/, (.*),\s[0-9]{1,}\sms/g);
-
-    //     if(playfabids.length !== playerNames.length){
-    //       console.warn(`error: playerlist parse failure 😩`);
-    //       return;
-    //     }
-
-    //     let playerlist = [];
-
-    //     for(const index in playerNames){
-    //       playerlist.push({playfabid: playfabids[index], name: playerNames[index]});
-    //     }
-
-    //     return playerlist;
-    //   }
-    // }
 
     iniParseKillfeed(resp){
       let respList = resp.split(/^Killfeed:\s/);
