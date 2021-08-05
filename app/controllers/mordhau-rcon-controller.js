@@ -1,5 +1,8 @@
 const CommandLog = require("../../models/command-log");
 const Discord = require('../services/discord');
+const Killfeed = require('../../models/rcon-killfeed');
+const Leaderboard = require('../../models/leaderboard');
+const config = require('../../config.json');
 
 class MordhauRconController{
 
@@ -21,34 +24,36 @@ class MordhauRconController{
     this.commandLog = new CommandLog();
     this.discordConn = Discord.singleton();
     this.rcon = rcon;
+    this.Killfeed = new Killfeed();
+    this.leaderboard = new Leaderboard();
   }
 
-  discord = 'https://discord.gg/GBZJmrR';
+  discord = config.discord.link;
 
   commandWhitelist = [
       {
         parseMatch: '/admin',
-        exeMethod: 'buildRequestAdminCommand',
+        exeMethod: '_buildRequestAdminCommand',
         info: 'Request an admin'
       },
       {
         parseMatch: '/commands',
-        exeMethod: 'buildCommandList',
+        exeMethod: '_buildCommandList',
         info: 'List of available commands'
       },
       {
         parseMatch: '/leaderboard',
-        exeMethod: 'buildGetLeaderboardCommand',
+        exeMethod: '_buildGetLeaderboardCommand',
         info: 'Link to our leaderboard'
       },
       {
         parseMatch: '/discord',
-        exeMethod: 'buildDiscordCommand',
+        exeMethod: '_buildDiscordCommand',
         info: 'Link to our discord'
       },
       {
         parseMatch: '/tp rock',
-        exeMethod: 'buildTpRockCommand',
+        exeMethod: '_buildTpRockCommand',
         mapArgs: {
           'Contraband':'x=-13200,y=7100,z=400',
         },
@@ -56,7 +61,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp top',
-        exeMethod: 'buildTpTopCommand',
+        exeMethod: '_buildTpTopCommand',
         mapArgs: {
           'Camp':'x=0,y=0,z=3500',
           'Contraband':'x=0,y=0,z=2500',
@@ -71,7 +76,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp middle',
-        exeMethod: 'buildTpMiddleCommand',
+        exeMethod: '_buildTpMiddleCommand',
         mapArgs: {
           'Camp':'x=0,y=0,z=1200',
           'Contraband':'x=0,y=0,z=1200',
@@ -86,7 +91,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp menu',
-        exeMethod: 'buildTpMenuCommand',
+        exeMethod: '_buildTpMenuCommand',
         mapArgs: {
           'Contraband':'x=-5359,y=327,z=-606',
           'The Pit':'x=-5500,y=-2700,z=1000',
@@ -97,7 +102,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp pillar',
-        exeMethod: 'buildTpPillarCommand',
+        exeMethod: '_buildTpPillarCommand',
         mapArgs: {
           'Contraband':'x=400,y=0,z=2000'
         },
@@ -105,7 +110,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp cage',
-        exeMethod: 'buildTpCageCommand',
+        exeMethod: '_buildTpCageCommand',
         mapArgs: {
           'Highlands': 'x=10264,y=-11758,z=-3450'
         },
@@ -113,7 +118,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp cart',
-        exeMethod: 'buildTpCartCommand',
+        exeMethod: '_buildTpCartCommand',
         mapArgs: {
           'Highlands': 'x=8391,y=-15256,z=-3360'
         },
@@ -121,7 +126,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp stonehenge',
-        exeMethod: 'buildTpStonehengeCommand',
+        exeMethod: '_buildTpStonehengeCommand',
         mapArgs: {
           'Highlands': 'x=-32940,y=-45509,z=-2378'
         },
@@ -129,7 +134,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp pen',
-        exeMethod: 'buildTpPenCommand',
+        exeMethod: '_buildTpPenCommand',
         mapArgs: {
           'Highlands': 'x=8610,y=-16307,z=-3359'
         },
@@ -137,7 +142,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp net',
-        exeMethod: 'buildTpNetCommand',
+        exeMethod: '_buildTpNetCommand',
         mapArgs: {
           'Contraband': 'x=-500,y=-700,z=2300'
         },
@@ -145,7 +150,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp arena2',
-        exeMethod: 'buildTpFT10Command',
+        exeMethod: '_buildTpFT10Command',
         mapArgs: {
           'Contraband': 'x=3200,y=3500,z=4000'
         },
@@ -153,7 +158,7 @@ class MordhauRconController{
       },
       {
         parseMatch: '/tp arena',
-        exeMethod: 'buildTpFT102Command',
+        exeMethod: '_buildTpFT102Command',
         mapArgs: {
           'Contraband': 'x=3200, y=-3500,z=4000',
           'Moshpit': 'x=-10000,y=5000,z=6400',
@@ -162,18 +167,7 @@ class MordhauRconController{
       }
   ];
 
-    chatBlacklist = [
-      'nigger',
-      'Nigger',
-      'niggers',
-      'Niggers',
-      'nigers',
-      'Nigers',
-      'N!gger',
-      'Nigger3r',
-      'nigga',
-      'Nigga',
-    ];
+    chatBlacklist = config.blacklisted_words;
 
     respData = {
       playfab: null,
@@ -184,6 +178,8 @@ class MordhauRconController{
       matchState: null,
       gamemode: null,
       map: null,
+      playerlist: null,
+      rankKillCount: null,
     }
 
     async getCommand(){
@@ -215,7 +211,7 @@ class MordhauRconController{
 
     getOneDayMuteCommand(){
       return {
-        command: this.buildMuteForOneDayCommand(),
+        command: this._buildMuteForOneDayCommand(),
         name: this.respData.name
       };
     }
@@ -231,17 +227,21 @@ class MordhauRconController{
     getKillfeed(){
       return this.respData.killfeed;
     }
+
+    getPlayerlist(){
+      return this.respData.playerlist;
+    }
     
     hasCommand(resp){
     
-      const respChunk = this.iniParseChat(resp);
-      if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
+      const respChunk = this._iniParseChat(resp);
+      if(typeof respChunk !== 'undefined' && this._matchPlayfab(respChunk[0])) {
 
             this.respData.playfab = respChunk[0];
             this.respData.name = respChunk[1];
             this.respData.message = respChunk[2].match(/^\s\((.*)\)\s(.*)/)[2];
 
-          this.respData.commandIndex = this.parseForCommand(this.respData.message);
+          this.respData.commandIndex = this._parseForCommand(this.respData.message);
 
           if(this.respData.commandIndex === -1) return false; // No command found
 
@@ -250,7 +250,7 @@ class MordhauRconController{
     }
 
     hasKillfeed(resp){
-      const data = this.iniParseKillfeed(resp);
+      const data = this._iniParseKillfeed(resp);
 
       if (typeof data !== 'undefined'){
         this.respData.killfeed = data;
@@ -261,7 +261,7 @@ class MordhauRconController{
 
     hasMessage(resp){
       
-      const respChunk = this.iniParseChat(resp);
+      const respChunk = this._iniParseChat(resp);
 
       if(typeof respChunk !== 'undefined') return true;
       return false;
@@ -269,14 +269,14 @@ class MordhauRconController{
 
     hasBlacklistedWord(resp){
 
-      const respChunk = this.iniParseChat(resp);
+      const respChunk = this._iniParseChat(resp);
 
-      if(typeof respChunk !== 'undefined' && this.matchPlayfab(respChunk[0])) {
+      if(typeof respChunk !== 'undefined' && this._matchPlayfab(respChunk[0])) {
         this.respData.playfab = respChunk[0];
         this.respData.name = respChunk[1];
         this.respData.message = respChunk[2].match(/^\s\((.*)\)\s(.*)/)[2];
 
-        if(this.parseForChatBlacklist(this.respData.message) === -1) return false;
+        if(this._parseForChatBlacklist(this.respData.message) === -1) return false;
 
         return true;
       }
@@ -284,7 +284,7 @@ class MordhauRconController{
 
     hasMatchState(resp){
 
-      const respChunk = this.iniParseMatchState(resp);
+      const respChunk = this._iniParseMatchState(resp);
 
       if(typeof respChunk === 'undefined') return false; // response isn't MatchState
       
@@ -295,7 +295,7 @@ class MordhauRconController{
 
     hasInfo(resp){
 
-      const respChunk = this.iniParseInfo(resp);
+      const respChunk = this._iniParseInfo(resp);
 
       if(typeof respChunk === 'undefined') return false; // response isn't Info
 
@@ -305,15 +305,29 @@ class MordhauRconController{
       return true; // response is Info
     }
 
+    hasPlayerlist(resp){
+      const respChunk = this._iniParsePlayerlist(resp);
+
+      if(typeof respChunk !== 'undefined'){
+
+        this.respData.playerlist = respChunk;
+
+        return true;
+      }
+    }
+
     hasPunishment(resp){
-      const respChunk = this.iniParsePunishment(resp);
+      const respChunk = this._iniParsePunishment(resp);
 
       if(typeof respChunk === 'undefined') return false;
       return true;
     }
 
     handleMessage(str){
-      this.discordConn.client.channels.cache.get('839952559749201920').send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
+      // reports the chat to discord
+      if(config.bootstrap.discord){
+        this.discordConn.client.channels.cache.get(config.discord.chat_channel_id).send(str.replace(/[^a-zA-Z0-9()\?\:]/ig,' '));
+      }
     }
 
     handleCommand(command){
@@ -335,12 +349,27 @@ class MordhauRconController{
       }
     }
 
+    /**
+     * 
+     * @param {string} str 
+     */
     handlePunishment(str){
-      // reports punishment to discord
-      this.discordConn.client.channels.cache.get('842075143136084008').send(str);
+      // reports punishments to discord
+      if(config.bootstrap.discord){
+        this.discordConn.client.channels.cache.get(config.discord.punishment_channel_id).send(str);
+      }
     }
 
-    iniParseInfo(resp){
+
+    /**
+     * 
+     * @param {object} kill 
+     */
+    async handleKill(kill){
+      await this.Killfeed.saveKill(kill);
+    }
+
+    _iniParseInfo(resp){
       const respList = resp.split('\n');
 
       if(respList.length > 1 && respList[0].match(/^HostName:/)) {
@@ -351,10 +380,25 @@ class MordhauRconController{
       }
     }
 
-    iniParseKillfeed(resp){
-      let respList = resp.split(/^Killfeed:\s/);
+    _iniParsePlayerlist(resp){
+      if(resp.match(/,\s(team)\s[0-9]{1,2}/)){
+        const playerlist = resp.match(/([A-Z0-9]{14,16})/g);
 
+        return playerlist;  
+      }
+    }
+
+    _iniParseKillfeed(resp){
+      let respList = resp.split(/^Killfeed:\s/);
+      const playfabids = resp.match(/([A-Z0-9]{14,16})/g);
+
+      // checks if the message is a killfeed and if it contains two players (not a bot)
       if(respList.length > 1) {
+
+        if(playfabids.length <= 1){
+          console.log(`${playfabids} killed a bot 🤖`);
+          return;
+        }
         let data = {players: []};
 
         respList[1] = respList[1].split(/.?:\s/);
@@ -362,6 +406,7 @@ class MordhauRconController{
 
         for(let player in players){
           let name = players[player].split(/[A-Z0-9]{14,16}\s/)[1];
+          name = name.slice(1, name.length - 1); // removes brackets from name e.g. (plzHelpM3) to plzHelpM3
           let id = players[player].split(' ')[0];
           data.players.push({playfab:id, name:name});
         }
@@ -378,53 +423,54 @@ class MordhauRconController{
       return;
     }
 
-    iniParseMatchState(resp){
+    _iniParseMatchState(resp){
       const respList = resp.split(/^MatchState:\s/);
 
       if(respList.length > 1) return respList[1];
     }
     
-    iniParseChat(resp){
+    _iniParseChat(resp){
         const respList = resp.split(/^Chat:\s/);
         
       if(respList.length > 1) return respList[1].split(',');
     }
 
-    iniParsePunishment(resp){
+    _iniParsePunishment(resp){
       const respList = resp.split(/^Punishment:\s/);
 
       if(respList.length > 1) return respList[1].split(',');
     }
     
-    matchPlayfab(string){
+    _matchPlayfab(string){
       if(string.match(/^[A-Z0-9]{14,16}$/)) return true;
 
       console.log("Failed to match playfab");
       return false;
     }
 
-    parseForCommand(message){
+    _parseForCommand(message){
       return this.commandWhitelist.findIndex( (command) => message.startsWith(command.parseMatch));
     }
 
-    parseForChatBlacklist(message){
+    _parseForChatBlacklist(message){
       return this.chatBlacklist.findIndex( (word) => message.includes(word))
     }
 
-    async buildRequestAdminCommand(){
+    async _buildRequestAdminCommand(){
+      // pings a role within discord (role id specified in config.json)
       const currentTime = new Date().getTime();
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/admin').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
       if(currentTime >= lastUse + 120000){
         this.commandLog.saveCommand(this.getPlayfab(), this.getMessage());
-        this.discordConn.client.channels.cache.get('839952559749201920').send(`<@&770321070959493170>, ${this.getName()} requested an admin`);
+        this.discordConn.client.channels.cache.get(config.discord.chat_channel_id).send(`<@&${config.discord.admin_role_id}>, ${this.getName()} requested an admin`);
         return `say ${this.getName()}, an admin request has been sent.`;
       }
       return `writetoconsole requestAdminCommand timeout: ${this.getName()} - ${this.getPlayfab()}`;
     }
 
-    async buildDiscordCommand(){
+    async _buildDiscordCommand(){
       const currentTime = new Date().getTime();
       const lastCommand =  await this.commandLog.getLastCommand(this.getPlayfab(), '/discord').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
@@ -436,7 +482,7 @@ class MordhauRconController{
       return `writetoconsole discord timeout: ${this.getPlayfab()}`;
     }
 
-    async buildCommandList(){
+    async _buildCommandList(){
       const currentTime = new Date().getTime();
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/commands').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
@@ -469,78 +515,78 @@ class MordhauRconController{
       return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
     }
 
-    async buildGetLeaderboardCommand(){
+    async _buildGetLeaderboardCommand(){
       const currentTime = new Date().getTime();
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/leaderboard').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
       if(currentTime >= lastUse + 60000){
         this.commandLog.saveCommand(this.getPlayfab(), '/leaderboard');
-        return `say https://cronchduels.com/server-one/leaderboard`;
+        return `say ${config.leaderboard.url}`;
       }
       return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
     }
 
-    buildTpTopCommand(){
+    _buildTpTopCommand(){
         const args = this.getMapArgs();
         return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpRockCommand(){
+    _buildTpRockCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpMiddleCommand(){
+    _buildTpMiddleCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildMuteForOneDayCommand(){
+    _buildMuteForOneDayCommand(){
       return `mute ${this.getPlayfab()} 1440`
     }
 
-    buildTpMenuCommand(){
+    _buildTpMenuCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpPillarCommand(){
+    _buildTpPillarCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpCageCommand(){
+    _buildTpCageCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpNetCommand(){
+    _buildTpNetCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpFT10Command(){
+    _buildTpFT10Command(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpFT102Command(){
+    _buildTpFT102Command(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpCartCommand(){
+    _buildTpCartCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpPenCommand(){
+    _buildTpPenCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
-    buildTpStonehengeCommand(){
+    _buildTpStonehengeCommand(){
       const args = this.getMapArgs();
       return `teleportplayer ${this.getPlayfab()} ${args}`;
     }

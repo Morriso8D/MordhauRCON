@@ -6,10 +6,12 @@ class Helpers{
     static sendAsync = async function (conn,command) {
         if ((typeof command === 'string') && (conn.hasAuthed)) {
             await conn.send(command);
-            return await new Promise(function(resolve, reject) {
-                conn.once('response', response => { 
+            return new Promise((resolve, reject) => {
+                conn.once('response', function responseListener(response){ 
+                    conn.removeListener('response', responseListener);
                     resolve(response); 
-                }).once('error', error => {
+                }).once('error', function errorListener(error){
+                    conn.removeListener('error', errorListener);
                     reject(error);
                 });
             });
