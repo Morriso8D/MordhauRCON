@@ -16,9 +16,9 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 * Discord integration for control and reporting (reports chat and punishments)
 * leaderboard with 1v1 stats (MariaDB)
 * custom [in-game commands](#in-game-commands)
+* API anchors -- offers a range of handy functions to setup your own bespoke commands and/or behaviour
 * send RCON commands via CLI (optional)
 * Automod - mute players for using blacklisted words (configurable in [config.json](/config.json))
-* API anchors -- offering a range of handy functions to setup your own bespoke commands and/or behaviour
 * run from either client machine or server
 * configurable setup
 
