@@ -1,6 +1,6 @@
 # MordhauRCON
 
-## Table of contents
+####### Table of contents
 * [About] (#about)
 * [Features] (#features)
 * [Requirements] (#requirements)
