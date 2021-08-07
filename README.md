@@ -39,7 +39,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
     "leaderboard": true
 },
 ```
-5. Open [create_db.sql](/setup/create_db.sql) and run the queries to build your database
+5. Open [create_db.sql](/setup/create_db.sql) and run the SQL to build your database
 6. Navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and then run ``node server.js`` to start the bot
 
 ## In-game Commands
