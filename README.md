@@ -15,7 +15,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 * Automod - mute players for using blacklisted words (configurable in config.json)
 * discord control and reporting (chatlog and punishments)
 * leaderboard with 1v1 stats (MySQL)
-* run from client machine or server with CLI control
+* run from either client machine or server with CLI control
 * configurable setup
 * rich set of API anchors -- offering a range of handy functions to setup your own bespoke commands and/or behaviour.
 
