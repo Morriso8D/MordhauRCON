@@ -1,13 +1,13 @@
 # MordhauRCON
 
 ## Table of contents
-* [General info] (#general-info)
+* [About] (#about)
 * [Features] (#features)
 * [Requirements] (#requirements)
 * [Setup] (#setup)
 * [API] (#api)
 
-## General info
+## About
 MordhauRCON is a Node.js bot that allows you to easily manage and customise your Mordhau server via RCON.
 
 ## Features
