@@ -30,6 +30,10 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 2. Rename [.env.example](/.env.example) to ``.env`` (in the root directory) and then edit and save your connection settings.
 3. Open [config.json](/config.json) and configure the bots setup. E.g. - if discord isn't required, set the "bootstrap" section to false 
 ```json 
-{"discord": false}
+"bootstrap":{
+"discord":false,
+"command_line":true,
+"leaderboard":true
+}
 ```
 5. Navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and then run ``node server.js`` to start the bot.
