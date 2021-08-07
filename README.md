@@ -26,7 +26,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 * discord bot token (optional)
 
 ## Setup
-1. Clone or fork the repository.
+1. Clone or fork the repository ``git clone https://github.com/Morriso8D/MordhauRCON.git``.
 2. Rename [.env.example](/.env.example) to ``.env`` (in the root directory) and then edit and save your connection settings.
 3. Open [config.json](/config.json) and configure the bots setup. E.g. - if discord isn't required, set "discord" to false 
 ```json 
