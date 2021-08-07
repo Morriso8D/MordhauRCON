@@ -26,12 +26,12 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 * Node version: >14.17.4
 * MariaDB: >10.4.10
 * run from client machine (Windows, Mac) or server (Linux, Windows)
-* discord bot token (optional)
+* Discord bot token (optional)
 
 ## Setup
-1. Clone or fork the repository ``git clone https://github.com/Morriso8D/MordhauRCON.git``
-2. Rename [.env.example](/.env.example) to ``.env`` (in the root directory) and then edit and save your connection settings
-3. Open [config.json](/config.json) and configure the bots setup. E.g. - if discord isn't required, set "discord" to false
+1. clone or fork the repository ``git clone https://github.com/Morriso8D/MordhauRCON.git``
+2. rename [.env.example](/.env.example) to ``.env`` (in the root directory) and then edit and save your connection settings
+3. open [config.json](/config.json) and configure the bots setup. E.g. - if discord isn't required, set "discord" to false
 ```json 
 "bootstrap":{
     "discord": false,
@@ -39,9 +39,9 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
     "leaderboard": true
 },
 ```
-5. Open [create_db.sql](/setup/create_db.sql) and run the SQL to create the tables
-6. Navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and run ``npm install``
-7. Start the bot ``node server.js``
+5. open [create_db.sql](/setup/create_db.sql) and run the SQL to create the tables
+6. navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and run ``npm install``
+7. start the bot ``node server.js``
 
 ## In-game Commands
 
