@@ -24,7 +24,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 ## Requirements
 * Node version: >14.17.4
 * MariaDB: >10.4.10
-* run from client machine (Windows, Mac) or Linux/Windows server
+* run from client machine (Windows, Mac) or server (Linux/Windows)
 * discord bot token (optional)
 
 ## Setup
