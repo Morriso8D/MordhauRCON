@@ -13,7 +13,8 @@
 
     "bootstrap":{
         "discord": true,
-        "command_line": true
+        "command_line": true,
+        "leaderboard": true
     },
 
     "discord":{
@@ -37,6 +38,8 @@
         "N!gger",
         "Nigger3r",
         "nigga",
-        "Nigga"
+        "Nigga",
+        "nig",
+        "Nig"
     ]
 }

@@ -1,5 +1,4 @@
 const CommandLog = require("../../models/command-log");
-const Discord = require('../services/discord');
 const Killfeed = require('../../models/rcon-killfeed');
 const Leaderboard = require('../../models/leaderboard');
 const config = require('../../config.json');
@@ -22,10 +21,14 @@ class MordhauRconController{
     }
 
     this.commandLog = new CommandLog();
-    this.discordConn = Discord.singleton();
     this.rcon = rcon;
     this.Killfeed = new Killfeed();
     this.leaderboard = new Leaderboard();
+
+    // pull config requirements
+    if(config.bootstrap.discord){
+      this.discordConn = require('../services/discord').singleton();
+    }
   }
 
   discord = config.discord.link;
@@ -34,7 +37,8 @@ class MordhauRconController{
       {
         parseMatch: '/admin',
         exeMethod: '_buildRequestAdminCommand',
-        info: 'Request an admin'
+        info: 'Request an admin',
+        requires: 'discord'
       },
       {
         parseMatch: '/commands',
@@ -44,12 +48,14 @@ class MordhauRconController{
       {
         parseMatch: '/leaderboard',
         exeMethod: '_buildGetLeaderboardCommand',
-        info: 'Link to our leaderboard'
+        info: 'Link to our leaderboard',
+        requires: 'leaderboard'
       },
       {
         parseMatch: '/discord',
         exeMethod: '_buildDiscordCommand',
-        info: 'Link to our discord'
+        info: 'Link to our discord',
+        requires: 'discord'
       },
       {
         parseMatch: '/tp rock',
@@ -183,8 +189,9 @@ class MordhauRconController{
     }
 
     async getCommand(){
-      if(typeof this.commandWhitelist[this.respData.commandIndex].exeMethod === 'string'){ // runs String exeMethods
-        return this[this.commandWhitelist[this.respData.commandIndex].exeMethod]();
+      // Exe methods can either be a string (pointer) or function
+      if(typeof this.commandWhitelist[this.respData.commandIndex].exeMethod === 'string'){
+        return await this[this.commandWhitelist[this.respData.commandIndex].exeMethod]();
       }
       return await this.commandWhitelist[this.respData.commandIndex].exeMethod(this);
     }
@@ -237,13 +244,20 @@ class MordhauRconController{
       const respChunk = this._iniParseChat(resp);
       if(typeof respChunk !== 'undefined' && this._matchPlayfab(respChunk[0])) {
 
-            this.respData.playfab = respChunk[0];
-            this.respData.name = respChunk[1];
-            this.respData.message = respChunk[2].match(/^\s\((.*)\)\s(.*)/)[2];
+        const [playfabid, name, message] = respChunk;
+
+            this.respData.playfab = playfabid;
+            this.respData.name = name;
+            this.respData.message = message.match(/^\s\((.*)\)\s(.*)/)[2];
 
           this.respData.commandIndex = this._parseForCommand(this.respData.message);
 
+          // checks if the whitelist contains the command
           if(this.respData.commandIndex === -1) return false; // No command found
+
+          // checks if the command has a config requirement
+          const requires = this.commandWhitelist[this.respData.commandIndex]?.requires;
+          if(requires && (config.bootstrap[requires] ?? false) === false) return false; // requirement not enabled
 
           return true;
       }
@@ -272,9 +286,12 @@ class MordhauRconController{
       const respChunk = this._iniParseChat(resp);
 
       if(typeof respChunk !== 'undefined' && this._matchPlayfab(respChunk[0])) {
-        this.respData.playfab = respChunk[0];
-        this.respData.name = respChunk[1];
-        this.respData.message = respChunk[2].match(/^\s\((.*)\)\s(.*)/)[2];
+
+        const [playfabid, name, message] = respChunk;
+
+        this.respData.playfab = playfabid;
+        this.respData.name = name;
+        this.respData.message = message.match(/^\s\((.*)\)\s(.*)/)[2];
 
         if(this._parseForChatBlacklist(this.respData.message) === -1) return false;
 
@@ -462,7 +479,9 @@ class MordhauRconController{
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/admin').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
-      if(currentTime >= lastUse + 120000){
+      // only if requestee's last use is greater than 2 minutes ago
+      // && discord enabled in config
+      if(currentTime >= lastUse + 120000 && config.bootstrap.discord){
         this.commandLog.saveCommand(this.getPlayfab(), this.getMessage());
         this.discordConn.client.channels.cache.get(config.discord.chat_channel_id).send(`<@&${config.discord.admin_role_id}>, ${this.getName()} requested an admin`);
         return `say ${this.getName()}, an admin request has been sent.`;
@@ -487,10 +506,17 @@ class MordhauRconController{
       const lastCommand = await this.commandLog.getLastCommand(this.getPlayfab(), '/commands').then(result => {return result;}).catch(err => console.log('error:',err));
       const lastUse = new Date(lastCommand[0]?.created_at ?? null).getTime(); // allows null values to pass the next condition
 
+      // checks if the player used the command < 2 minutes ago
       if(currentTime >= lastUse + 120000){
         this.commandLog.saveCommand(this.getPlayfab(), '/commands');
 
+        // filter commands available for the current map & config requirements
         const filteredCommands = this.commandWhitelist.filter( command =>  {
+
+          // checks if command has a config requirement
+          // && if requirement is enabled
+          if(command.requires && (config.bootstrap[command.requires]) === false) return false; // requirement not enabled
+
           if(typeof command.mapArgs === 'undefined'){
             return true;
           }
