@@ -20,7 +20,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 * send RCON commands via CLI (optional)
 * run from either client machine or server
 * configurable setup
-* rich set of API anchors -- offering a range of handy functions to setup your own bespoke commands and/or behaviour
+* API anchors -- offering a range of handy functions to setup your own bespoke commands and/or behaviour
 
 ## Requirements
 * Node version: >14.17.4
