@@ -215,3 +215,6 @@ returns the active game mode (Deathmatch, Invasion etc...) after calling [hasInf
 
 #### getMap
 returns the active map after calling [hasInfo](#hasInfo)
+
+#### getMapArgs
+returns the a commands arguments for the active map
