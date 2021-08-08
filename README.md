@@ -64,29 +64,29 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 |```/tp arena2```      | Teleports player (Contraband only)                                           |
 
 ## Discord Commands
-| Commands                              | What it does                                                                   |
-| --------------------------------------|:------------------------------------------------------------------------------:|
-|```!say <message>```                   | Send a message to the server                                                   |
-|```!playerlist```                      | Returns players online                                                         |
-|```!mutelist```                        | Returns a list of muted players                                                |
-|```!adminlist```                       | Returns a list of admins                                                       |
-|```!banlist```                         | Returns a list of banned players                                               |
-|```!kick <playfabid> <reason>```       | Kick a player from the server                                                  |
-|```!teleportplayer x=<x>,y=<y>,z=<z>```| Teleport a player to the specified coordinates                                 |
-|```!killplayer <playfabid>```          | Kill a player                                                                  |
-|```!info```                            | Returns server info (current map etc...)                                       |
-|```!stats```                           | Returns performance stats                                                      |
-|```!renameplayer <playfabid> <new name>```             | Rename a player                                                |
-|```!addbots <number>```                                | Add bots to the server                                         |
-|```!removebots <number>```                             | Remove bots from the server                                    |
-|```!ban <playfabid> <duration> <reason>```             | Ban a player (set duration to 0 for perma ban)                 |
-|```!unban <playfabid>```                               | Unban a player                                                 |
-|```!mute <playfabid> <duration>```                     | Mute a player (set duration to 0 for perma mute)               |
-|```!unmute <playfabid>```                              | Unmute a player                                                |
-|```!help```                                            | List all available RCON commands                               |
-|```!addadmin <playfabid>```                            | Give a player admin privilege                                  |
-|```!removeadmin <playfabid>```                         | Remove admin privilege from a player                           |
-|```!scoreboard```                                      | Output a scoreboard                                            |
-|```!changelevel <map>```                               | Change the current map                                         |
+| Commands                                              | What it does                                                                      |
+| ------------------------------------------------------|:---------------------------------------------------------------------------------:|
+|```!say <message>```                                   | Send a message to the server                                                      |
+|```!playerlist```                                      | Returns players online                                                            |
+|```!mutelist```                                        | Returns a list of muted players                                                   |
+|```!adminlist```                                       | Returns a list of admins                                                          |
+|```!banlist```                                         | Returns a list of banned players                                                  |
+|```!kick <playfabid> <reason>```                       | Kick a player from the server                                                     |
+|```!teleportplayer x=<x>,y=<y>,z=<z>```                | Teleport a player to the specified coordinates                                    |
+|```!killplayer <playfabid>```                          | Kill a player on command                                                          |
+|```!info```                                            | Returns server info (current map etc...)                                          |  
+|```!stats```                                           | Returns performance stats                                                         |
+|```!renameplayer <playfabid> <new name>```             | Rename a player                                                                   |
+|```!addbots <number>```                                | Add bots to the server                                                            |
+|```!removebots <number>```                             | Remove bots from the server                                                       |
+|```!ban <playfabid> <duration> <reason>```             | Ban a player (set duration to 0 for perma ban)                                    |
+|```!unban <playfabid>```                               | Unban a player                                                                    |
+|```!mute <playfabid> <duration>```                     | Mute a player (set duration to 0 for perma mute)                                  |
+|```!unmute <playfabid>```                              | Unmute a player                                                                   |
+|```!help```                                            | List all available RCON commands                                                  |
+|```!addadmin <playfabid>```                            | Give a player admin privilege                                                     |
+|```!removeadmin <playfabid>```                         | Remove admin privilege from a player                                              |
+|```!scoreboard```                                      | Output a scoreboard                                                               |
+|```!changelevel <map>```                               | Change the current map                                                            |
 
 ## API
