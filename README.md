@@ -116,18 +116,18 @@ The MordhauRconController accepts an array of commands as an argument. Here's an
 - accepts a string from RCON
 returns boolean
 
-### getCommand
+#### getCommand
 returns the command after [hasCommand](#hasCommand) checks the response. This makes it possible to run extra functionality before commands are executed.
 
-### handleCommand
+#### handleCommand
 - accepts a command object from [getCommand](#getCommand)
 runs the commands exeMethod
 
-### hasBlacklistedWord
+#### hasBlacklistedWord
 - accepts a string from RCON
 returns boolean
 
-### getOneDayMuteCommand
+#### getOneDayMuteCommand
 returns an object
 ```javascript
 {
@@ -136,33 +136,33 @@ returns an object
 }
 ```
 
-### handleBlacklistedWord
+#### handleBlacklistedWord
 - accepts an object returned from [getOneDayMuteCommand](#getOneDayMuteCommand)
 Mutes a player for 1 day
 
-### hasMatchState
+#### hasMatchState
 - accepts a string from RCON
 Returns true if the string contains match state info. Match state is triggered when changing map or starting a new game.
 
-### handleMatchState
+#### handleMatchState
 Sends the ```info``` command to fetch the active map
 
-### hasPunishment
+#### hasPunishment
 - accepts a string from RCON
 Returns boolean
 
-### handlePunishment
+#### handlePunishment
 - accepts a string from RCON
 Sends the punishment to Discord
 
-### hasInfo
+#### hasInfo
 returns true when if the response from the ```info``` command is received
 
-### hasKillfeed
+#### hasKillfeed
 - accepts a string
 returns boolean
 
-### getKillfeed
+#### getKillfeed
 returns an object of kill data
 ```javascript
     {
@@ -172,22 +172,22 @@ returns an object of kill data
     }
 ```
 
-### handleKillfeed
+#### handleKillfeed
 - accepts an object from [getKillfeed](#getKillfeed)
 Updates the database
 
-### hasPlayerlist
+#### hasPlayerlist
 - accepts a string from RCON
 returns boolean
 
-### getPlayfab
+#### getPlayfab
 returns the playfabid of the player after calling [getCommand](#getCommand)
 
-### getName
+#### getName
 returns the name of the player after calling [getCommand](#getCommand)
 
-### getGamemode
+#### getGamemode
 returns the active game mode (Deathmatch, Invasion etc...) after calling [hasInfo](#hasInfo)
 
-### getMap
+#### getMap
 returns the active map after calling [hasInfo](#hasInfo)
