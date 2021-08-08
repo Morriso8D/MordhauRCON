@@ -113,22 +113,30 @@ The MordhauRconController accepts an array of commands as an argument. Here's an
 ```
 ### MordhauRconController
 #### hasCommand
-- accepts a string from RCON
+accepts a string from RCON
+
+
 returns boolean
 
 #### getCommand
 returns the command after [hasCommand](#hasCommand) checks the response. This makes it possible to run extra functionality before commands are executed.
 
 #### handleCommand
-- accepts a command object from [getCommand](#getCommand)
+accepts a command object from [getCommand](#getCommand)
+
+
 runs the commands exeMethod
 
 #### hasBlacklistedWord
-- accepts a string from RCON
+accepts a string from RCON
+
+
 returns boolean
 
 #### getOneDayMuteCommand
 returns an object
+
+
 ```javascript
 {
     command: this._buildOneDayMuteCommand(), // command to mute the player
@@ -137,33 +145,45 @@ returns an object
 ```
 
 #### handleBlacklistedWord
-- accepts an object returned from [getOneDayMuteCommand](#getOneDayMuteCommand)
+accepts an object returned from [getOneDayMuteCommand](#getOneDayMuteCommand)
+
+
 Mutes a player for 1 day
 
 #### hasMatchState
-- accepts a string from RCON
+accepts a string from RCON
+
+
 Returns true if the string contains match state info. Match state is triggered when changing map or starting a new game.
 
 #### handleMatchState
 Sends the ```info``` command to fetch the active map
 
 #### hasPunishment
-- accepts a string from RCON
+accepts a string from RCON
+
+
 Returns boolean
 
 #### handlePunishment
-- accepts a string from RCON
+accepts a string from RCON
+
+
 Sends the punishment to Discord
 
 #### hasInfo
 returns true when if the response from the ```info``` command is received
 
 #### hasKillfeed
-- accepts a string
+accepts a string
+
+
 returns boolean
 
 #### getKillfeed
 returns an object of kill data
+
+
 ```javascript
     {
           killer: '490979674227212288', // killers playfabid
@@ -173,11 +193,15 @@ returns an object of kill data
 ```
 
 #### handleKillfeed
-- accepts an object from [getKillfeed](#getKillfeed)
+accepts an object from [getKillfeed](#getKillfeed)
+
+
 Updates the database
 
 #### hasPlayerlist
 accepts a string from RCON
+
+
 returns boolean
 
 #### getPlayfab
