@@ -39,7 +39,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
     "leaderboard": true
 },
 ```
-5. open [create_db.sql](/setup/create_db.sql) and run the SQL to create the tables (only required if leaderboard is enabled)
+5. open [create_db.sql](/setup/create_db.sql) and run the SQL to create the database (only required if leaderboard is enabled)
 6. navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and run ``npm install``
 7. start the bot ``node server.js``
 
