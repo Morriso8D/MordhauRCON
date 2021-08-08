@@ -46,7 +46,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 ## In-game Commands
 | Command       | What it does                                                          | Dependencies |
 | ------------- |:---------------------------------------------------------------------:|:------------:|
-| ```/admin```  | Pings an admin in Discord for support (includes 2 minute timeout)     | "admin_role_id" in [config.json](/config.json)
+| ```/admin```  | Pings an admin in Discord for support (includes 2 minute timeout)     | Set a Discord role ID - "admin_role_id" in [config.json](/config.json)
 | col 2 is      | centered                                                              |
 | zebra stripes | are neat                                                              |
 
