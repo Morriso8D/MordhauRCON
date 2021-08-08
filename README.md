@@ -14,7 +14,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 
 ## Features
 * Discord integration for control and reporting (reports chat and punishments)
-* leaderboard with 1v1 stats (MariaDB)
+* leaderboard with 1v1 stats (MariaDB) - [conchduels.com](https://cronchduels.com/server-one/leaderboard)
 * custom [in-game commands](#in-game-commands)
 * API anchors -- offers a range of handy functions to setup your own bespoke commands and/or behaviour
 * send RCON commands via CLI (optional)
