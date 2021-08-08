@@ -177,7 +177,7 @@ returns an object of kill data
 Updates the database
 
 #### hasPlayerlist
-- accepts a string from RCON
+<accepts a string from RCON>
 returns boolean
 
 #### getPlayfab
