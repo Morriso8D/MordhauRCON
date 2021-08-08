@@ -44,11 +44,11 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 7. start the bot ``node server.js``
 
 ## In-game Commands
-| Tables        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| col 3 is      | right-aligned | $1600 |
-| col 2 is      | centered      |   $12 |
-| zebra stripes | are neat      |    $1 |
+| Command       | What it does                                                          | Dependencies |
+| ------------- |:---------------------------------------------------------------------:|:------------:|
+| ```/admin```  | Pings an admin in Discord for support (includes 2 minute timeout)     | "admin_role_id" in [config.json](/config.json)
+| col 2 is      | centered                                                              |
+| zebra stripes | are neat                                                              |
 
 ## CLI Commands
 
