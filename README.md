@@ -7,7 +7,7 @@
 * [Setup](#setup)
 * [In-game Commands](#in-game-commands)
 * [Discord Commands](#discord-commands)
-* [API](#api)
+* [Docs](#docs)
 
 ## About
 MordhauRCON is a Node.js bot that allows you to easily manage and customise your Mordhau gaming server via RCON.
@@ -89,4 +89,24 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 |```!scoreboard```                                      | Output a scoreboard                                                               |
 |```!changelevel <map>```                               | Change the current map                                                            |
 
-## API
+## Docs
+### How to extend commands?
+The MordhauRconController accepts an array of commands as an argument. Here's an example of how to create a new teleport command
+```javascript
+    const commands = [
+    {
+        parseMatch: '/tp oopsie', // required
+        mapArgs: { // optional
+        'Contraband': 'x=0,y=0,z=100000',
+        'Arena':  'x=0,y=0,z=100000',
+        'Moshpit': 'x=0,y=0,z=100000'
+        },
+        info: "don\'t do it...", // optional - adds a description for the command which is returned when using '/commands'
+        exeMethod: (response) => { // required - returns a mordhau rcon command as a string
+        const args = response.getMapArgs();
+        return `teleportplayer ${response.getPlayfab()} ${args}`;
+        }
+    }
+    ];
+    const rconController = new RconController(conn, commands);
+```
