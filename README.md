@@ -44,12 +44,12 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 7. start the bot ``node server.js``
 
 ## In-game Commands
-| Command              | What it does                                                                 | Dependencies |
+| Commands              | What it does                                                                 | Dependencies |
 | -------------------- |:----------------------------------------------------------------------------:|:------------:|
 | ```/admin```         | Pings an admin in Discord for support (includes 2 minute timeout)            |(1) "admin_role_id" must be set to a Discord role ID in [config.json](/config.json). (2) Database setup for command logging
-| ```/commands```      | Lists all available commands for the current map (includes 2 minute timeout) | 
-|```/leaderboard```    | Outputs a link to the leaderboard                                            | "leaderboard" set to true in [config.json](/config.json) & "leaderboard" "url" mut be set
-|```/discord```        | Outputs a link to the Discord (includes 2 minute timeout                     | Discord "link" must be set in [config.json](/config.json)
+| ```/commands```      | Lists all available commands for the current map (includes 2 minute timeout) | Database setup for command logging
+|```/leaderboard```    | Outputs a link to the leaderboard                                            | (1) "leaderboard" set to true in [config.json](/config.json) & "leaderboard" "url" mut be set. (2) Database setup for command logging
+|```/discord```        | Outputs a link to the Discord (includes 2 minute timeout                     | (1) Discord "link" must be set in [config.json](/config.json). (2) Database setup for command logging
 |```/tp rock```        | Teleports player (Contraband only)                                           |
 |```/tp top```         | Teleports player to the sky box                                              |
 |```/tp middle```      | Teleports player to the middle of the map                                    |
