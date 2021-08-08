@@ -383,7 +383,10 @@ class MordhauRconController{
      * @param {object} kill 
      */
     async handleKill(kill){
-      await this.Killfeed.saveKill(kill);
+      // save kill/death to killfeed and update leaderboard
+      if(config.bootstrap.leaderboard){
+        await this.Killfeed.saveKill(kill);
+      }
     }
 
     _iniParseInfo(resp){
