@@ -90,19 +90,20 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 |```!changelevel <map>```                               | Change the current map                                                            |
 
 ## Docs
-### How to extend commands?
-The MordhauRconController accepts an array of commands as an argument. Here's an example of how to create a new teleport command
+### How to extend the commands?
+The MordhauRconController accepts an array of commands as an argument. Here's an example of a teleport command being added:
+[server.js](/server.js)
 ```javascript
     const commands = [
     {
-        parseMatch: '/tp oopsie', // required
-        mapArgs: { // optional
+        parseMatch: '/tp oopsie', // required (the string to trigger the command)
+        mapArgs: { // optional (allows commands to have map specific behaviour)
         'Contraband': 'x=0,y=0,z=100000',
         'Arena':  'x=0,y=0,z=100000',
         'Moshpit': 'x=0,y=0,z=100000'
         },
-        info: "don\'t do it...", // optional - adds a description for the command which is returned when using '/commands'
-        exeMethod: (response) => { // required - returns a mordhau rcon command as a string
+        info: "don\'t do it...", // optional (adds a description for the command. Returned when using '/commands')
+        exeMethod: (response) => { // required (the function called to execute the command)
         const args = response.getMapArgs();
         return `teleportplayer ${response.getPlayfab()} ${args}`;
         }
@@ -110,3 +111,83 @@ The MordhauRconController accepts an array of commands as an argument. Here's an
     ];
     const rconController = new RconController(conn, commands);
 ```
+### MordhauRconController
+#### hasCommand
+- accepts a string from RCON
+returns boolean
+
+### getCommand
+returns the command after [hasCommand](#hasCommand) checks the response. This makes it possible to run extra functionality before commands are executed.
+
+### handleCommand
+- accepts a command object from [getCommand](#getCommand)
+runs the commands exeMethod
+
+### hasBlacklistedWord
+- accepts a string from RCON
+returns boolean
+
+### getOneDayMuteCommand
+returns an object
+```javascript
+{
+    command: this._buildOneDayMuteCommand(), // command to mute the player
+    name: this.respData.name // players name
+}
+```
+
+### handleBlacklistedWord
+- accepts an object returned from [getOneDayMuteCommand](#getOneDayMuteCommand)
+Mutes a player for 1 day
+
+### hasMatchState
+- accepts a string from RCON
+Returns true if the string contains match state info. Match state is triggered when changing map or starting a new game.
+
+### handleMatchState
+Sends the ```info``` command to fetch the active map
+
+### hasPunishment
+- accepts a string from RCON
+Returns boolean
+
+### handlePunishment
+- accepts a string from RCON
+Sends the punishment to Discord
+
+### hasInfo
+returns true when if the response from the ```info``` command is received
+
+### hasKillfeed
+- accepts a string
+returns boolean
+
+### getKillfeed
+returns an object of kill data
+```javascript
+    {
+          killer: '490979674227212288', // killers playfabid
+          killed: '396034238669127680', // killed playfabid
+          created_at: '2021-05-16 18:24:20', // time of kill
+    }
+```
+
+### handleKillfeed
+- accepts an object from [getKillfeed](#getKillfeed)
+Updates the database
+
+### hasPlayerlist
+- accepts a string from RCON
+returns boolean
+
+### getPlayfab
+returns the playfabid of the player after calling [getCommand](#getCommand)
+
+### getName
+returns the name of the player after calling [getCommand](#getCommand)
+
+### getGamemode
+returns the active game mode (Deathmatch, Invasion etc...) after calling [hasInfo](#hasInfo)
+
+### getMap
+returns the active map after calling [hasInfo](#hasInfo)
