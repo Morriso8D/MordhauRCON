@@ -5,6 +5,7 @@
 * [Features](#features)
 * [Requirements](#requirements)
 * [Setup](#setup)
+* [Config](#config)
 * [In-game Commands](#in-game-commands)
 * [Discord Commands](#discord-commands)
 * [Docs](#docs)
@@ -43,6 +44,20 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 6. navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and run ``npm install``
 7. start the bot ``node server.js``
 
+## Config
+* To give an admin permission to send commands over Discord, first add their Discord ID to the "authed_admins" array.
+E.g
+```json
+    "authed_admins":[
+        "300588065162919937"
+    ],
+```
+
+* The "chat_channel_id" key-value tells the bot where to log the in-game chat. It accepts a Discord channel ID
+* "punishment_channel_id" tells the bot where to log punishments. It accepts a Discord channel ID
+
+
+
 ## In-game Commands
 | Commands             | What it does                                                                 | Dependencies |
 | -------------------- |:----------------------------------------------------------------------------:|:------------:|
@@ -76,9 +91,9 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 |```!killplayer <playfabid>```                          | Kill a player on command                                                          |
 |```!info```                                            | Returns server info (current map etc...)                                          |  
 |```!stats```                                           | Returns performance stats                                                         |
-|```!renameplayer <playfabid> <new name>```             | Rename a player                                                                   |
-|```!addbots <number>```                                | Add bots to the server                                                            |
-|```!removebots <number>```                             | Remove bots from the server                                                       |
+|```!renameplayer <playfabid> <new name>```             | Renames a player                                                                  |
+|```!addbots <number>```                                | Adding bots                                                                       |
+|```!removebots <number>```                             | Removing bots                                                                     |
 |```!ban <playfabid> <duration> <reason>```             | Ban a player (set duration to 0 for perma ban)                                    |
 |```!unban <playfabid>```                               | Unban a player                                                                    |
 |```!mute <playfabid> <duration>```                     | Mute a player (set duration to 0 for perma mute)                                  |
