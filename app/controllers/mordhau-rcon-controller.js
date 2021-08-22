@@ -58,6 +58,30 @@ class MordhauRconController{
         requires: 'discord'
       },
       {
+        parseMatch: '/tp red',
+        exeMethod: '_buildTpRedCommand',
+        mapArgs: {
+          'Arena': 'x=2000,y=1,z=20'
+        },
+        info: 'Teleport',
+      },
+      {
+        parseMatch: '/tp blue',
+        exeMethod: '_buildTpBlueCommand',
+        mapArgs: {
+          'Arena': 'x=-2000,y=1,z=20'
+        },
+        info: 'Teleport',
+      },
+      {
+        parseMatch: '/tp roof',
+        exeMethod: '_buildTpRoofCommand',
+        mapArgs: {
+          'Camp': 'x=600,y=-2350,z=2800',
+        },
+        info: 'Teleport'
+      },
+      {
         parseMatch: '/tp rock',
         exeMethod: '_buildTpRockCommand',
         mapArgs: {
@@ -115,10 +139,59 @@ class MordhauRconController{
         info: 'Teleport'
       },
       {
+        parseMatch: '/tp cage3',
+        exeMethod: '_buildTpCageCommand',
+        mapArgs: {
+          'Arena': 'x=1850,y=1900,z=50',
+        },
+        info: 'Teleport'
+      },
+      {
+        parseMatch: '/tp cage2',
+        exeMethod: '_buildTpCageCommand',
+        mapArgs: {
+          'Arena': 'x=2000,y=2040,z=1',
+        },
+        info: 'Teleport'
+      },
+      {
+        parseMatch: '/tp bluepillar',
+        exeMethod: '_buildTpBluePillarCommand',
+        mapArgs: {
+          'Arena': 'x=0,y=950,z=600',
+        },
+        info: 'Teleport'
+      },
+      {
+        parseMatch: '/tp redpillar',
+        exeMethod: '_buildTpRedPillarCommand',
+        mapArgs: {
+          'Arena': 'x=0,y=-950,z=600',
+        },
+        info: 'Teleport'
+      },
+      {
+        parseMatch: '/tp box',
+        exeMethod: '_buildTpBoxCommand',
+        mapArgs: {
+          'Arena': 'x=250,y=1800,z=1',
+        },
+        info: 'Teleport'
+      },
+      {
+        parseMatch: '/tp floor',
+        exeMethod: '_buildTpCommand',
+        mapArgs: {
+          'Contraband': 'x=1,y=1,z=999',
+        },
+        info: 'Teleport'
+      },
+      {
         parseMatch: '/tp cage',
         exeMethod: '_buildTpCageCommand',
         mapArgs: {
-          'Highlands': 'x=10264,y=-11758,z=-3450'
+          'Highlands': 'x=10264,y=-11758,z=-3450',
+          'Arena': 'x=2000,y=1900,z=1',
         },
         info: 'Teleport'
       },
@@ -469,7 +542,7 @@ class MordhauRconController{
     }
 
     _parseForCommand(message){
-      return this.commandWhitelist.findIndex( (command) => message.startsWith(command.parseMatch));
+      return this.commandWhitelist.findIndex( (command) => message === command.parseMatch);
     }
 
     _parseForChatBlacklist(message){
@@ -554,6 +627,41 @@ class MordhauRconController{
         return `say ${config.leaderboard.url}`;
       }
       return `writetoconsole command-list timeout: ${this.getPlayfab()}`;
+    }
+
+    _buildTpCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    _buildTpRedCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    _buildTpBlueCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    _buildTpBluePillarCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    _buildTpRedPillarCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    _buildTpBoxCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
+    }
+
+    _buildTpRoofCommand(){
+      const args = this.getMapArgs();
+      return `teleportplayer ${this.getPlayfab()} ${args}`;
     }
 
     _buildTpTopCommand(){
