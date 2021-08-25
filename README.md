@@ -45,7 +45,8 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 6. navigate to the repo's directory (e.g. ``cd /Users/<your-name>/code/MordhauRCON``) and run ``npm install``
 7. start the bot ``node server.js``
 
-## Config (config.json)
+## Config 
+Please make sure you've followed steps 3 and 4 within [setup](#setup) before altering the config.
 * To give an admin the ability to send commands over Discord, first add their Discord ID to the "authed_admins" array.
 E.g
 ```json
