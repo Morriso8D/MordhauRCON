@@ -46,7 +46,7 @@ MordhauRCON is a Node.js bot that allows you to easily manage and customise your
 7. start the bot ``node server.js``
 
 ## Config
-* To give an admin permission to send commands over Discord, first add their Discord ID to the "authed_admins" array.
+* To give an admin the ability to send commands over Discord, first add their Discord ID to the "authed_admins" array.
 E.g
 ```json
     "authed_admins":[
