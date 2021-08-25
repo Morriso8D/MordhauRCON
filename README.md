@@ -62,10 +62,10 @@ E.g
 ## In-game Commands
 | Commands             | What it does                                                                 | Dependencies |
 | -------------------- |:----------------------------------------------------------------------------:|:------------:|
-| ```/admin```         | Pings an admin in Discord for support (includes 2 minute timeout)            |(1) "admin_role_id" must be set to a Discord role ID in [config.json](/config.json). (2) Database setup for command logging
+| ```/admin```         | Pings an admin in Discord for support (includes 2 minute timeout)            |(1) "admin_role_id" must be set to a Discord role ID in config.json (2) Database setup for command logging
 | ```/commands```      | Lists all available commands for the current map (includes 2 minute timeout) | Database setup for command logging
-|```/leaderboard```    | Outputs a link to the leaderboard                                            | (1) "leaderboard" set to true in [config.json](/config.json) & "leaderboard" "url" mut be set. (2) Database setup for command logging
-|```/discord```        | Outputs a link to the Discord (includes 2 minute timeout                     | (1) Discord "link" must be set in [config.json](/config.json). (2) Database setup for command logging
+|```/leaderboard```    | Outputs a link to the leaderboard                                            | (1) set "leaderboard" to true in config.json & "leaderboard" "url" mut be set. (2) Database setup for command logging
+|```/discord```        | Outputs a link to the Discord (includes 2 minute timeout                     | (1) Discord "link" must be defined in config.json (2) Database setup for command logging
 |```/tp rock```        | Teleports player (Contraband only)                                           |
 |```/tp top```         | Teleports player to the sky box                                              |
 |```/tp middle```      | Teleports player to the middle of the map                                    |
