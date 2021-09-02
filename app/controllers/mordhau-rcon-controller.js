@@ -43,7 +43,8 @@ class MordhauRconController{
       {
         parseMatch: '/commands',
         exeMethod: '_buildCommandList',
-        info: 'List of available commands'
+        info: 'List of available commands',
+        requires: 'leaderboard',
       },
       {
         parseMatch: '/leaderboard',
